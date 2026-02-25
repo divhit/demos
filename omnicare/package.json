@@ -1,0 +1,19 @@
+{
+  "name": "omnicare",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "dev:widget": "turbo dev --filter=@omnicare/widget"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@10.6.5",
+  "engines": {
+    "node": ">=20"
+  }
+}
