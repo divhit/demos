@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Winnie — AI-Powered Conversational Commerce for Formal Wear</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-deep: #06060a;
+  --bg-surface: #0d0d14;
+  --bg-elevated: #14141f;
+  --bg-card: #1a1a28;
+  --bg-card-hover: #22223a;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.1);
+  --text-primary: #f0ece4;
+  --text-secondary: rgba(240, 236, 228, 0.6);
+  --text-tertiary: rgba(240, 236, 228, 0.35);
+  --rose: #c4907c;
+  --rose-bright: #d4a08c;
+  --rose-glow: rgba(196, 144, 124, 0.15);
+  --champagne: #d4b896;
+  --champagne-glow: rgba(212, 184, 150, 0.12);
+  --blush: #e8c4b8;
+  --gold: #c9a96e;
+  --green: #7bc8a4;
+  --green-glow: rgba(123, 200, 164, 0.15);
+  --blue: #7ba8d4;
+  --blue-glow: rgba(123, 168, 212, 0.12);
+  --red: #d47b7b;
+  --purple: #a87bd4;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--rose) var(--bg-deep); }
+body { font-family: var(--font-body); background: var(--bg-deep); color: var(--text-primary); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--rose); color: var(--bg-deep); }
+
+/* ── NAV DOTS ── */
+.nav-dots { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); z-index: 100; display: flex; flex-direction: column; gap: 12px; }
+.nav-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-medium); border: none; cursor: pointer; transition: all 0.4s var(--ease-out-expo); position: relative; }
+.nav-dot:hover { background: var(--text-secondary); transform: scale(1.3); }
+.nav-dot.active { background: var(--rose); box-shadow: 0 0 12px var(--rose-glow); transform: scale(1.2); }
+.nav-dot .tooltip { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); background: var(--bg-card); color: var(--text-primary); font-size: 11px; padding: 4px 10px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; border: 1px solid var(--border-subtle); }
+.nav-dot:hover .tooltip { opacity: 1; }
+
+/* ── FLOATING CTA ── */
+.floating-cta { position: fixed; bottom: 32px; right: 32px; z-index: 100; background: linear-gradient(135deg, var(--rose), var(--champagne)); color: var(--bg-deep); font-family: var(--font-body); font-weight: 600; font-size: 14px; padding: 14px 28px; border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s var(--ease-out-expo); box-shadow: 0 8px 32px rgba(196, 144, 124, 0.3); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.floating-cta:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 12px 40px rgba(196, 144, 124, 0.4); }
+.floating-cta svg { width: 16px; height: 16px; }
+
+/* ── SECTIONS ── */
+section { min-height: 100vh; position: relative; padding: 120px 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.section-inner { max-width: 1200px; width: 100%; }
+
+/* ── REVEALS ── */
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+.section-label { font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--rose); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+.section-label::before { content: ''; width: 24px; height: 1px; background: var(--rose); }
+.section-title { font-family: var(--font-display); font-size: clamp(32px, 5vw, 56px); font-weight: 500; line-height: 1.15; margin-bottom: 20px; background: linear-gradient(135deg, var(--text-primary), var(--blush)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.section-subtitle { font-size: 17px; line-height: 1.7; color: var(--text-secondary); max-width: 640px; font-weight: 300; }
+
+/* ═══ HERO ═══ */
+#hero { min-height: 100vh; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.hero-gradient-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.4; animation: orbFloat 12s ease-in-out infinite; }
+.hero-gradient-orb:nth-child(1) { width: 600px; height: 600px; top: -10%; left: -5%; background: radial-gradient(circle, rgba(196,144,124,0.4), transparent 70%); }
+.hero-gradient-orb:nth-child(2) { width: 500px; height: 500px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(212,184,150,0.3), transparent 70%); animation-delay: -4s; }
+.hero-gradient-orb:nth-child(3) { width: 400px; height: 400px; top: 40%; left: 50%; background: radial-gradient(circle, rgba(232,196,184,0.2), transparent 70%); animation-delay: -8s; }
+@keyframes orbFloat { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -20px) scale(1.05); } 66% { transform: translate(-20px, 15px) scale(0.95); } }
+.hero-noise { position: absolute; inset: 0; z-index: 1; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 128px; }
+.hero-content { position: relative; z-index: 2; text-align: center; max-width: 900px; padding: 0 24px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--bg-elevated); border: 1px solid var(--border-subtle); padding: 8px 18px; border-radius: 50px; font-size: 12px; color: var(--text-secondary); margin-bottom: 40px; animation: fadeInUp 1s var(--ease-out-expo) 0.2s both; }
+.hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.hero-name { font-family: var(--font-display); font-size: clamp(64px, 10vw, 140px); font-weight: 400; letter-spacing: -2px; line-height: 1; background: linear-gradient(135deg, var(--text-primary) 0%, var(--blush) 50%, var(--champagne) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 24px; animation: fadeInUp 1s var(--ease-out-expo) 0.4s both; }
+.hero-tagline { font-family: var(--font-display); font-size: clamp(18px, 2.5vw, 28px); font-weight: 400; font-style: italic; color: var(--rose-bright); margin-bottom: 16px; animation: fadeInUp 1s var(--ease-out-expo) 0.6s both; }
+.hero-subtitle { font-size: 16px; line-height: 1.7; color: var(--text-secondary); max-width: 560px; margin: 0 auto 48px; font-weight: 300; animation: fadeInUp 1s var(--ease-out-expo) 0.8s both; }
+.hero-channels { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; animation: fadeInUp 1s var(--ease-out-expo) 1s both; }
+.hero-channel { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-tertiary); font-weight: 400; }
+.hero-channel svg { width: 18px; height: 18px; opacity: 0.5; }
+.hero-scroll-hint { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); animation: fadeInUp 1s var(--ease-out-expo) 1.4s both; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-tertiary); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+.scroll-line { width: 1px; height: 40px; background: linear-gradient(to bottom, var(--rose), transparent); animation: scrollPulse 2s infinite; }
+@keyframes scrollPulse { 0% { opacity: 1; transform: scaleY(1); } 50% { opacity: 0.3; transform: scaleY(0.6); } 100% { opacity: 1; transform: scaleY(1); } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══ CONVERSATIONS ═══ */
+.channels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 48px; align-items: start; }
+.channel-tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg-elevated); border-radius: 12px; padding: 4px; border: 1px solid var(--border-subtle); }
+.channel-tab { flex: 1; padding: 10px 16px; border: none; border-radius: 10px; background: transparent; color: var(--text-secondary); font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s; }
+.channel-tab.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.phone-mockup { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 32px; padding: 16px; max-width: 380px; margin: 0 auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04); }
+.phone-notch { width: 120px; height: 28px; background: var(--bg-deep); border-radius: 0 0 16px 16px; margin: 0 auto 16px; }
+.phone-header { text-align: center; padding: 8px 0 16px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 16px; }
+.phone-header .name { font-weight: 600; font-size: 15px; }
+.phone-header .status { font-size: 11px; color: var(--green); margin-top: 2px; }
+.chat-messages { display: flex; flex-direction: column; gap: 10px; min-height: 340px; padding: 8px 4px; }
+.chat-msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5; opacity: 0; animation: msgAppear 0.4s var(--ease-out-expo) forwards; }
+.chat-msg.customer { align-self: flex-end; background: var(--rose); color: var(--bg-deep); border-bottom-right-radius: 4px; }
+.chat-msg.agent { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
+.chat-msg.system { align-self: center; background: transparent; color: var(--text-tertiary); font-size: 11px; text-align: center; padding: 4px 12px; }
+@keyframes msgAppear { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.product-card-mini { background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 12px; margin-top: 8px; display: flex; gap: 12px; align-items: center; }
+.product-card-mini .img-placeholder { width: 56px; height: 56px; border-radius: 8px; background: linear-gradient(135deg, var(--rose-glow), var(--champagne-glow)); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.product-card-mini .info { font-size: 12px; }
+.product-card-mini .info .pname { font-weight: 600; margin-bottom: 2px; }
+.product-card-mini .info .price { color: var(--champagne); font-weight: 500; }
+.product-card-mini .info .tag { display: inline-block; background: var(--green-glow); color: var(--green); font-size: 10px; padding: 2px 8px; border-radius: 4px; margin-top: 4px; }
+.payment-link-btn { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--rose), var(--champagne)); color: var(--bg-deep); font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 8px; margin-top: 8px; }
+
+.channel-features { display: flex; flex-direction: column; gap: 20px; }
+.channel-feature { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; transition: all 0.3s; }
+.channel-feature:hover { border-color: var(--border-medium); background: var(--bg-elevated); }
+.channel-feature .icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 12px; }
+.channel-feature .icon.sms { background: var(--green-glow); }
+.channel-feature .icon.whatsapp { background: rgba(37, 211, 102, 0.12); }
+.channel-feature .icon.voice { background: var(--blue-glow); }
+.channel-feature .icon.handoff { background: var(--rose-glow); }
+.channel-feature h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.channel-feature p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+/* ═══ CONTEXT ═══ */
+.context-flow { display: flex; align-items: center; gap: 0; margin: 48px 0 40px; overflow-x: auto; padding: 20px 0; }
+.context-step { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 140px; position: relative; }
+.context-step .step-icon { width: 56px; height: 56px; border-radius: 14px; background: var(--bg-elevated); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; transition: all 0.5s; }
+.context-step.active .step-icon { border-color: var(--rose); box-shadow: 0 0 24px var(--rose-glow); background: var(--bg-card); }
+.context-step .step-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+.context-arrow { font-size: 18px; color: var(--text-tertiary); margin: 0 8px; flex-shrink: 0; margin-bottom: 24px; }
+.context-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+.context-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; position: relative; overflow: hidden; }
+.context-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--rose), var(--champagne)); }
+.context-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.context-card .greeting-demo { background: var(--bg-elevated); border-radius: 12px; padding: 16px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); border-left: 3px solid var(--rose); }
+.context-card .greeting-demo em { color: var(--champagne); font-style: normal; font-weight: 500; }
+.summary-grid { display: flex; flex-direction: column; gap: 10px; }
+.summary-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; }
+.summary-item .tag { flex-shrink: 0; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-item .tag.sentiment { background: var(--green-glow); color: var(--green); }
+.summary-item .tag.points { background: var(--blue-glow); color: var(--blue); }
+.summary-item .tag.next { background: var(--rose-glow); color: var(--rose-bright); }
+.summary-item .text { color: var(--text-secondary); line-height: 1.5; }
+
+/* ═══ CRM ═══ */
+.dashboard-mockup { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 24px; margin-top: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.dash-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle); }
+.dash-search { background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 8px 16px; font-size: 13px; color: var(--text-tertiary); display: flex; align-items: center; gap: 8px; width: 260px; }
+.dash-actions { display: flex; gap: 8px; }
+.dash-btn { padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 500; border: 1px solid var(--border-subtle); background: var(--bg-elevated); color: var(--text-secondary); cursor: default; }
+.dash-btn.primary { background: linear-gradient(135deg, var(--rose), var(--champagne)); color: var(--bg-deep); border: none; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 16px; }
+.stat-card .label { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.stat-card .value { font-size: 28px; font-weight: 700; font-family: var(--font-display); }
+.stat-card .change { font-size: 11px; color: var(--green); margin-top: 4px; }
+.pipeline-section { margin-bottom: 24px; }
+.pipeline-section h4 { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+.pipeline-funnel { display: flex; gap: 4px; height: 48px; align-items: end; }
+.pipeline-bar { flex: 1; border-radius: 6px 6px 0 0; transition: height 1.5s var(--ease-out-expo); position: relative; }
+.pipeline-bar .count { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.pipeline-bar .lbl { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text-tertiary); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px; }
+.pipeline-bar.new { background: linear-gradient(to top, var(--blue), rgba(123,168,212,0.6)); }
+.pipeline-bar.contacted { background: linear-gradient(to top, var(--champagne), rgba(212,184,150,0.6)); }
+.pipeline-bar.followup { background: linear-gradient(to top, var(--rose), rgba(196,144,124,0.6)); }
+.pipeline-bar.converted { background: linear-gradient(to top, var(--green), rgba(123,200,164,0.6)); }
+.leads-table { width: 100%; border-collapse: collapse; margin-top: 40px; }
+.leads-table th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); padding: 8px 12px; border-bottom: 1px solid var(--border-subtle); font-weight: 500; }
+.leads-table td { padding: 14px 12px; font-size: 13px; border-bottom: 1px solid var(--border-subtle); }
+.leads-table tr:hover td { background: var(--bg-elevated); }
+.status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 500; }
+.status-badge.new { background: var(--blue-glow); color: var(--blue); }
+.status-badge.contacted { background: var(--champagne-glow); color: var(--champagne); }
+.status-badge.followup { background: var(--rose-glow); color: var(--rose-bright); }
+.status-badge.converted { background: var(--green-glow); color: var(--green); }
+.status-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.avatar-sm { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-subtle); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+
+/* ═══ CAMPAIGNS ═══ */
+.campaign-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+.campaign-builder { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; }
+.campaign-builder h4 { font-size: 15px; font-weight: 600; margin-bottom: 20px; }
+.campaign-types { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.campaign-type { background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px; cursor: default; transition: all 0.3s; text-align: center; }
+.campaign-type.selected { border-color: var(--rose); background: var(--rose-glow); }
+.campaign-type .emoji { font-size: 20px; margin-bottom: 4px; }
+.campaign-type .type-name { font-size: 12px; font-weight: 500; }
+.campaign-targeting { background: var(--bg-elevated); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.campaign-targeting .filter-label { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.filter-chip { padding: 4px 12px; border-radius: 6px; font-size: 11px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-secondary); }
+.filter-chip.active { background: var(--rose-glow); border-color: var(--rose); color: var(--rose-bright); }
+.campaign-progress-panel { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; }
+.campaign-progress-panel h4 { font-size: 15px; font-weight: 600; margin-bottom: 20px; }
+.progress-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.progress-stat { text-align: center; padding: 12px; background: var(--bg-elevated); border-radius: 10px; }
+.progress-stat .num { font-size: 24px; font-weight: 700; font-family: var(--font-display); }
+.progress-stat .lbl { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+.progress-stat.sent .num { color: var(--green); }
+.progress-stat.failed .num { color: var(--red); }
+.progress-stat.responses .num { color: var(--champagne); }
+.progress-bar-container { background: var(--bg-elevated); border-radius: 8px; height: 8px; overflow: hidden; margin-bottom: 20px; }
+.progress-bar-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--rose), var(--champagne)); width: 0%; transition: width 2s var(--ease-out-expo); }
+.message-preview { background: var(--bg-elevated); border-radius: 10px; padding: 12px; border-left: 3px solid var(--green); opacity: 0; transform: translateX(-10px); transition: all 0.4s var(--ease-out-expo); margin-bottom: 10px; }
+.message-preview.visible { opacity: 1; transform: translateX(0); }
+.message-preview .to { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+.message-preview .msg { font-size: 12px; color: var(--text-tertiary); line-height: 1.5; }
+.message-preview .status-sent { font-size: 10px; color: var(--green); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+
+/* ═══ INVENTORY ═══ */
+.inventory-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+.semantic-search-demo { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; }
+.search-input-mockup { background: var(--bg-elevated); border: 1px solid var(--border-medium); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; font-size: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+.search-input-mockup .icon { color: var(--rose); font-size: 16px; }
+.search-input-mockup .cursor { display: inline-block; width: 2px; height: 18px; background: var(--rose); animation: blink 1s infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.product-result { background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 16px; display: flex; gap: 16px; transition: all 0.3s; cursor: default; margin-bottom: 12px; }
+.product-result:hover { border-color: var(--border-medium); transform: translateX(4px); }
+.product-img { width: 72px; height: 72px; border-radius: 10px; flex-shrink: 0; background: linear-gradient(135deg, var(--bg-card), var(--rose-glow)); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.product-info h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.product-info .designer { font-size: 12px; color: var(--rose-bright); margin-bottom: 4px; }
+.product-info .details { font-size: 11px; color: var(--text-tertiary); }
+.product-info .price-tag { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 700; color: var(--champagne); }
+.match-score { margin-left: auto; align-self: center; background: var(--green-glow); color: var(--green); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
+.ecommerce-features { display: flex; flex-direction: column; gap: 16px; }
+.ecom-feature { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 20px; display: flex; gap: 16px; align-items: flex-start; }
+.ecom-feature .icon-box { width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.ecom-feature h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.ecom-feature p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+/* ═══ SALES REP ═══ */
+.sales-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+.quickadd-demo { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; }
+.sms-mockup { background: var(--bg-elevated); border-radius: 16px; padding: 16px; margin-top: 16px; }
+.sms-mockup .sms-bubble { background: var(--green-glow); border: 1px solid rgba(123,200,164,0.2); border-radius: 14px; padding: 12px; margin-bottom: 12px; font-size: 13px; line-height: 1.5; font-family: monospace; }
+.sms-mockup .sms-response { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px; font-size: 13px; line-height: 1.5; margin-left: 24px; }
+.code-badge { display: inline-block; background: var(--champagne-glow); color: var(--champagne); font-family: monospace; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+.workload-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.workload-row .rep-name { font-size: 13px; font-weight: 500; width: 100px; }
+.workload-bar-bg { flex: 1; background: var(--bg-elevated); border-radius: 6px; height: 8px; }
+.workload-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--rose), var(--champagne)); transition: width 1.5s var(--ease-out-expo); }
+.workload-row .count { font-size: 12px; color: var(--text-tertiary); width: 60px; text-align: right; }
+
+/* ═══ VOICE ═══ */
+.voice-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+.voice-visual { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 32px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.voice-wave { display: flex; align-items: center; justify-content: center; gap: 3px; height: 64px; margin-bottom: 24px; }
+.voice-wave .bar { width: 4px; border-radius: 2px; background: var(--rose); animation: waveBar 1.2s ease-in-out infinite; }
+.voice-wave .bar:nth-child(1) { height: 20px; animation-delay: 0s; }
+.voice-wave .bar:nth-child(2) { height: 35px; animation-delay: 0.1s; }
+.voice-wave .bar:nth-child(3) { height: 50px; animation-delay: 0.2s; }
+.voice-wave .bar:nth-child(4) { height: 40px; animation-delay: 0.3s; }
+.voice-wave .bar:nth-child(5) { height: 55px; animation-delay: 0.15s; }
+.voice-wave .bar:nth-child(6) { height: 30px; animation-delay: 0.25s; }
+.voice-wave .bar:nth-child(7) { height: 45px; animation-delay: 0.05s; }
+.voice-wave .bar:nth-child(8) { height: 25px; animation-delay: 0.35s; }
+.voice-wave .bar:nth-child(9) { height: 38px; animation-delay: 0.12s; }
+@keyframes waveBar { 0%, 100% { transform: scaleY(0.4); opacity: 0.4; } 50% { transform: scaleY(1); opacity: 1; } }
+.voice-status { font-size: 14px; font-weight: 500; color: var(--green); margin-bottom: 8px; }
+.voice-transcript { font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-width: 280px; font-style: italic; }
+.voice-tools { display: flex; flex-direction: column; gap: 12px; }
+.voice-tool { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 16px; display: flex; gap: 14px; align-items: center; transition: all 0.3s; }
+.voice-tool:hover { border-color: var(--border-medium); background: var(--bg-elevated); }
+.voice-tool .tool-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.voice-tool .tool-name { font-size: 13px; font-weight: 600; }
+.voice-tool .tool-desc { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+/* ═══ OWNER DASHBOARD FEATURES ═══ */
+.owner-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+.owner-feature { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; transition: all 0.3s; position: relative; overflow: hidden; }
+.owner-feature:hover { border-color: var(--border-medium); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.owner-feature .feature-icon { font-size: 28px; margin-bottom: 16px; }
+.owner-feature h4 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.owner-feature p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.owner-feature .live-dot { position: absolute; top: 16px; right: 16px; width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+
+/* ═══ MULTI-STORE ═══ */
+.tenancy-visual { display: flex; gap: 24px; margin-top: 40px; justify-content: center; flex-wrap: wrap; }
+.tenant-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; width: 280px; text-align: center; transition: all 0.4s; }
+.tenant-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+.tenant-card .org-logo { width: 56px; height: 56px; border-radius: 14px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: var(--bg-deep); }
+.tenant-card:nth-child(1) .org-logo { background: linear-gradient(135deg, var(--rose), var(--blush)); }
+.tenant-card:nth-child(2) .org-logo { background: linear-gradient(135deg, var(--champagne), var(--gold)); }
+.tenant-card:nth-child(3) .org-logo { background: linear-gradient(135deg, var(--blue), var(--purple)); }
+.tenant-card .org-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.tenant-card .org-type { font-size: 12px; color: var(--text-tertiary); margin-bottom: 12px; }
+.tenant-items { display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.tenant-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+.tenant-item .check { color: var(--green); font-weight: 700; }
+
+/* ═══ RESULTS ═══ */
+.results-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; }
+.result-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 28px; text-align: center; transition: all 0.3s; }
+.result-card:hover { border-color: var(--border-medium); transform: translateY(-4px); }
+.result-card .big-num { font-family: var(--font-display); font-size: 48px; font-weight: 600; line-height: 1; margin-bottom: 8px; }
+.result-card .result-label { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+/* ═══ FOOTER ═══ */
+#footer { min-height: auto; padding: 80px 48px; border-top: 1px solid var(--border-subtle); background: var(--bg-surface); }
+.footer-content { text-align: center; max-width: 600px; margin: 0 auto; }
+.footer-logo { font-family: var(--font-display); font-size: 48px; font-weight: 400; background: linear-gradient(135deg, var(--text-primary), var(--blush)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 12px; }
+.footer-tagline { font-size: 15px; color: var(--text-secondary); margin-bottom: 32px; }
+.footer-cta { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--rose), var(--champagne)); color: var(--bg-deep); font-family: var(--font-body); font-weight: 600; font-size: 16px; padding: 16px 40px; border-radius: 14px; border: none; cursor: pointer; text-decoration: none; transition: all 0.3s; box-shadow: 0 8px 32px rgba(196, 144, 124, 0.3); }
+.footer-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(196, 144, 124, 0.4); }
+.footer-contact { margin-top: 32px; font-size: 13px; color: var(--text-tertiary); }
+.footer-contact a { color: var(--rose-bright); text-decoration: none; }
+.footer-contact a:hover { text-decoration: underline; }
+.footer-brand { margin-top: 24px; font-size: 12px; color: var(--text-tertiary); letter-spacing: 2px; text-transform: uppercase; }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 900px) {
+  section { padding: 80px 24px; }
+  .channels-grid, .context-demo, .campaign-demo, .inventory-demo,
+  .sales-demo, .voice-demo { grid-template-columns: 1fr; }
+  .stats-row, .results-grid { grid-template-columns: 1fr 1fr; }
+  .owner-features { grid-template-columns: 1fr; }
+  .nav-dots { right: 12px; }
+  .floating-cta { bottom: 20px; right: 20px; padding: 12px 20px; font-size: 13px; }
+  .context-flow { flex-wrap: wrap; justify-content: center; }
+  .hero-name { letter-spacing: -1px; }
+  .tenancy-visual { flex-direction: column; align-items: center; }
+}
+@media (max-width: 600px) {
+  .stats-row, .results-grid { grid-template-columns: 1fr; }
+  .progress-stats { grid-template-columns: 1fr; }
+  .campaign-types { grid-template-columns: 1fr; }
+  .hero-channels { flex-direction: column; align-items: center; }
+}
+
+/* ═══ MODAL SYSTEM ═══ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200; background: rgba(6,6,10,0.85);
+  backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s var(--ease-out-expo);
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-panel {
+  background: var(--bg-surface); border: 1px solid var(--border-subtle);
+  border-radius: 20px; padding: 32px; max-width: 520px; width: 90%;
+  max-height: 85vh; overflow-y: auto; position: relative;
+  transform: translateY(20px) scale(0.97); transition: transform 0.4s var(--ease-out-expo);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+}
+.modal-overlay.open .modal-panel { transform: translateY(0) scale(1); }
+.modal-panel.wide { max-width: 700px; }
+.modal-close {
+  position: absolute; top: 16px; right: 16px; width: 32px; height: 32px;
+  border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-elevated);
+  color: var(--text-secondary); font-size: 18px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; transition: all 0.2s;
+}
+.modal-close:hover { background: var(--bg-card); color: var(--text-primary); }
+.modal-title { font-family: var(--font-display); font-size: 24px; font-weight: 500; margin-bottom: 8px; }
+.modal-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.form-input {
+  width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated); color: var(--text-primary); font-family: var(--font-body);
+  font-size: 13px; outline: none; transition: border-color 0.2s;
+}
+.form-input:focus { border-color: var(--rose); }
+.form-input::placeholder { color: var(--text-tertiary); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-select {
+  width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated); color: var(--text-primary); font-family: var(--font-body);
+  font-size: 13px; outline: none; appearance: none; cursor: pointer;
+}
+.modal-btn {
+  width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: var(--font-body);
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+  background: linear-gradient(135deg, var(--rose), var(--champagne)); color: var(--bg-deep);
+  margin-top: 8px;
+}
+.modal-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(196,144,124,0.3); }
+.modal-success {
+  text-align: center; padding: 24px 0;
+}
+.modal-success .check-circle {
+  width: 56px; height: 56px; border-radius: 50%; background: var(--green-glow);
+  border: 2px solid var(--green); display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin: 0 auto 16px;
+}
+.modal-success h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.modal-success p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+/* Lead detail */
+.lead-detail-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.lead-detail-avatar {
+  width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 18px; font-weight: 700; color: var(--bg-deep);
+  background: linear-gradient(135deg, var(--rose), var(--champagne));
+}
+.lead-detail-name { font-size: 20px; font-weight: 600; }
+.lead-detail-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.lead-detail-tabs { display: flex; gap: 4px; margin-bottom: 16px; background: var(--bg-elevated); border-radius: 10px; padding: 3px; }
+.lead-detail-tab {
+  flex: 1; padding: 8px; border: none; border-radius: 8px; background: transparent;
+  color: var(--text-secondary); font-family: var(--font-body); font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.lead-detail-tab.active { background: var(--bg-card); color: var(--text-primary); }
+.lead-convo-bubble {
+  padding: 10px 14px; border-radius: 12px; font-size: 12px; line-height: 1.5;
+  margin-bottom: 8px; max-width: 85%;
+}
+.lead-convo-bubble.customer { background: var(--rose); color: var(--bg-deep); margin-left: auto; border-bottom-right-radius: 4px; }
+.lead-convo-bubble.agent { background: var(--bg-card); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
+.lead-convo-time { font-size: 10px; color: var(--text-tertiary); text-align: center; margin: 12px 0 8px; }
+.lead-ai-summary {
+  background: var(--bg-elevated); border-radius: 12px; padding: 16px;
+  border-left: 3px solid var(--champagne);
+}
+.lead-ai-summary h5 { font-size: 12px; font-weight: 600; color: var(--champagne); margin-bottom: 8px; }
+.lead-ai-summary p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+
+/* Team management */
+.team-member {
+  display: flex; align-items: center; gap: 14px; padding: 14px;
+  background: var(--bg-elevated); border-radius: 12px; margin-bottom: 8px;
+  border: 1px solid var(--border-subtle);
+}
+.team-member .tm-avatar {
+  width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 13px; font-weight: 700; color: var(--bg-deep);
+  flex-shrink: 0;
+}
+.team-member .tm-info { flex: 1; }
+.team-member .tm-name { font-size: 14px; font-weight: 600; }
+.team-member .tm-role { font-size: 11px; color: var(--text-tertiary); }
+.team-member .tm-stats { text-align: right; }
+.team-member .tm-leads { font-size: 14px; font-weight: 600; color: var(--champagne); }
+.team-member .tm-label { font-size: 10px; color: var(--text-tertiary); }
+
+/* Interactive toggles */
+.dash-btn { cursor: pointer; transition: all 0.2s; }
+.dash-btn:hover { background: var(--bg-card); border-color: var(--border-medium); }
+.dash-btn.primary:hover { box-shadow: 0 4px 16px rgba(196,144,124,0.3); transform: translateY(-1px); }
+.leads-table tbody tr { cursor: pointer; transition: background 0.15s; }
+.leads-table tbody tr:hover td { background: var(--bg-card-hover); }
+.campaign-type { cursor: pointer; }
+.campaign-type:hover { border-color: var(--border-medium); }
+.filter-chip { cursor: pointer; transition: all 0.2s; }
+.filter-chip:hover { border-color: var(--border-medium); }
+.voice-tool { cursor: pointer; }
+
+/* Human control toggle */
+.hc-btn { cursor: pointer; transition: all 0.2s; user-select: none; }
+.hc-btn:hover { transform: translateY(-1px); }
+.hc-active { background: var(--red) !important; color: white !important; border: none !important; }
+</style>
+</head>
+<body>
+
+<nav class="nav-dots" id="navDots"></nav>
+
+<a href="mailto:div@heywinnie.ai?subject=Winnie%20Demo%20Request" class="floating-cta">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  Book a Demo
+</a>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section id="hero">
+  <div class="hero-gradient-orb"></div>
+  <div class="hero-gradient-orb"></div>
+  <div class="hero-gradient-orb"></div>
+  <div class="hero-noise"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Built by Analog Intelligence
+    </div>
+    <h1 class="hero-name">Winnie</h1>
+    <p class="hero-tagline">AI-Powered Conversational Commerce for Formal Wear</p>
+    <p class="hero-subtitle">Your AI salesperson that never sleeps. She texts, calls, recommends products, sends checkout links, books appointments, and remembers every customer — across every channel, 24/7.</p>
+    <div class="hero-channels">
+      <span class="hero-channel"><svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>SMS</span>
+      <span class="hero-channel"><svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>WhatsApp</span>
+      <span class="hero-channel"><svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1.02 1.02 0 0 0-1.02.24l-2.2 2.2a15.045 15.045 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1A11.36 11.36 0 0 1 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z"/></svg>Voice</span>
+      <span class="hero-channel"><svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Human Handoff</span>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <div class="scroll-line"></div>
+    Explore
+  </div>
+</section>
+
+<!-- ═══════════════ MULTI-CHANNEL AI ═══════════════ -->
+<section id="conversations">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Multi-Channel AI</div>
+      <h2 class="section-title">One AI. Every Channel.<br>Always Personal.</h2>
+      <p class="section-subtitle">Your customers reach out on SMS, WhatsApp, or phone — Winnie handles it all with a natural, context-aware AI that feels like your best salesperson.</p>
+    </div>
+    <div class="channels-grid">
+      <div class="reveal reveal-delay-1">
+        <div class="channel-tabs">
+          <button class="channel-tab active" data-channel="sms">SMS</button>
+          <button class="channel-tab" data-channel="whatsapp">WhatsApp</button>
+          <button class="channel-tab" data-channel="voice">Voice</button>
+        </div>
+        <div class="phone-mockup">
+          <div class="phone-notch"></div>
+          <div class="phone-header">
+            <div class="name">Winnie</div>
+            <div class="status">Online</div>
+          </div>
+          <div class="chat-messages" id="chatMessages"></div>
+        </div>
+      </div>
+      <div class="channel-features reveal reveal-delay-2">
+        <div class="channel-feature">
+          <div class="icon sms">💬</div>
+          <h4>AI-Native Text Messaging</h4>
+          <p>Customers text your store and get instant, intelligent responses. Winnie recommends products, shares checkout links, and books appointments — all over text.</p>
+        </div>
+        <div class="channel-feature">
+          <div class="icon whatsapp">📱</div>
+          <h4>WhatsApp Commerce</h4>
+          <p>Rich media messaging with product images, catalogs, and interactive buttons. Meet your customers where they already are.</p>
+        </div>
+        <div class="channel-feature">
+          <div class="icon voice">🎙️</div>
+          <h4>Natural Voice Conversations</h4>
+          <p>A voice AI that sounds human, knows your inventory, and can text customers product links during the call. Handles inbound and outbound calls 24/7.</p>
+        </div>
+        <div class="channel-feature">
+          <div class="icon handoff">🤝</div>
+          <h4>Seamless Human Handoff</h4>
+          <p>Your team can jump into any AI conversation with one click. Nothing is lost — the full context transfers instantly. Release back to AI when done.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CONTEXT ENGINE ═══════════════ -->
+<section id="context">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Customer Memory</div>
+      <h2 class="section-title">Every Customer Feels<br>Like a VIP</h2>
+      <p class="section-subtitle">Winnie remembers every conversation, every preference, every interaction — across channels. When a returning customer reaches out, your AI already knows them.</p>
+    </div>
+    <div class="context-flow reveal reveal-delay-1" id="contextFlow">
+      <div class="context-step" data-step="0">
+        <div class="step-icon">📞</div>
+        <div class="step-label">Customer Reaches Out</div>
+      </div>
+      <div class="context-arrow">→</div>
+      <div class="context-step" data-step="1">
+        <div class="step-icon">⚡</div>
+        <div class="step-label">Instant Recognition</div>
+      </div>
+      <div class="context-arrow">→</div>
+      <div class="context-step" data-step="2">
+        <div class="step-icon">🗂️</div>
+        <div class="step-label">Full History Loaded</div>
+      </div>
+      <div class="context-arrow">→</div>
+      <div class="context-step" data-step="3">
+        <div class="step-icon">💡</div>
+        <div class="step-label">Preferences Applied</div>
+      </div>
+      <div class="context-arrow">→</div>
+      <div class="context-step" data-step="4">
+        <div class="step-icon">✨</div>
+        <div class="step-label">Personalized Response</div>
+      </div>
+    </div>
+    <div class="context-demo">
+      <div class="context-card reveal reveal-delay-2">
+        <h4>🎯 Personalized From Word One</h4>
+        <div class="greeting-demo">
+          "Welcome back <em>Sarah</em>! Last time you were looking at <em>A-line wedding dresses</em> in the <em>$2,000–$3,000 range</em>. Your big day is coming up on <em>June 15th</em> — we just got some gorgeous new arrivals I think you'll love. Want to see them?"
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-tertiary);">
+          Context carries seamlessly between voice, SMS, and WhatsApp conversations.
+        </div>
+      </div>
+      <div class="context-card reveal reveal-delay-3">
+        <h4>📊 Smart Conversation Insights</h4>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="tag sentiment">Mood</span>
+            <span class="text">Excited and engaged — responding positively to suggestions</span>
+          </div>
+          <div class="summary-item">
+            <span class="tag points">Interests</span>
+            <span class="text">A-line silhouette, blush or ivory, budget around $2,500</span>
+          </div>
+          <div class="summary-item">
+            <span class="tag next">Next Steps</span>
+            <span class="text">Send new collection links, schedule fitting for Saturday</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CRM ═══════════════ -->
+<section id="crm">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Built-In CRM</div>
+      <h2 class="section-title">A CRM That Actually<br>Works For You</h2>
+      <p class="section-subtitle">No more paying for bloated CRM software your team never uses. Winnie's CRM is built right in — designed for small teams, not enterprise bureaucracy. Every lead, every conversation, every sale, one beautiful dashboard. No training needed. No $50/seat/month.</p>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;margin-bottom:-16px;" class="reveal">
+      <div style="background:var(--rose-glow);border:1px solid rgba(196,144,124,0.2);border-radius:10px;padding:12px 18px;flex:1;min-width:200px;">
+        <div style="font-size:20px;font-weight:700;color:var(--rose-bright);font-family:var(--font-display);">$0 extra</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">CRM included — no separate tool</div>
+      </div>
+      <div style="background:var(--green-glow);border:1px solid rgba(123,200,164,0.2);border-radius:10px;padding:12px 18px;flex:1;min-width:200px;">
+        <div style="font-size:20px;font-weight:700;color:var(--green);font-family:var(--font-display);">5 min</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Setup time — not weeks of config</div>
+      </div>
+      <div style="background:var(--blue-glow);border:1px solid rgba(123,168,212,0.2);border-radius:10px;padding:12px 18px;flex:1;min-width:200px;">
+        <div style="font-size:20px;font-weight:700;color:var(--blue);font-family:var(--font-display);">AI-native</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Leads auto-created from conversations</div>
+      </div>
+    </div>
+    <div class="dashboard-mockup reveal reveal-delay-1">
+      <div class="dash-topbar">
+        <div class="dash-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          Search leads, reps, or events...
+        </div>
+        <div class="dash-actions">
+          <div class="dash-btn" onclick="openModal('modalTeam')">Manage Team</div>
+          <div class="dash-btn" onclick="document.getElementById('campaigns').scrollIntoView({behavior:'smooth'})">Campaigns</div>
+          <div class="dash-btn primary" onclick="openModal('modalAddLead')">+ Add Lead</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="label">Active Conversations</div>
+          <div class="value" style="color:var(--blue);">47</div>
+          <div class="change">↑ 12% this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Engagement Rate</div>
+          <div class="value" style="color:var(--green);">73%</div>
+          <div class="change">↑ 8% this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Conversion Rate</div>
+          <div class="value" style="color:var(--champagne);">34%</div>
+          <div class="change">↑ 5% this quarter</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total Revenue</div>
+          <div class="value" style="color:var(--rose-bright);">$42k</div>
+          <div class="change">↑ 18% this month</div>
+        </div>
+      </div>
+      <div class="pipeline-section">
+        <h4>Lead Pipeline</h4>
+        <div class="pipeline-funnel" id="pipelineFunnel">
+          <div class="pipeline-bar new" data-height="100"><span class="count">124</span><span class="lbl">New</span></div>
+          <div class="pipeline-bar contacted" data-height="72"><span class="count">89</span><span class="lbl">Contacted</span></div>
+          <div class="pipeline-bar followup" data-height="48"><span class="count">58</span><span class="lbl">Follow-up</span></div>
+          <div class="pipeline-bar converted" data-height="28"><span class="count">42</span><span class="lbl">Converted</span></div>
+        </div>
+      </div>
+      <table class="leads-table">
+        <thead><tr><th>Customer</th><th>Event</th><th>Date</th><th>Status</th><th>Assigned To</th><th>Last Contact</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sarah Mitchell</strong></td><td>Bridal</td><td>Jun 15, 2026</td><td><span class="status-badge followup">Follow-up</span></td><td><span class="avatar-sm">JG</span> Janae G.</td><td>2 hours ago</td></tr>
+          <tr><td><strong>Emily Chen</strong></td><td>Prom</td><td>May 22, 2026</td><td><span class="status-badge new">New</span></td><td><span class="avatar-sm">—</span> Unassigned</td><td>Just now</td></tr>
+          <tr><td><strong>Rachel Torres</strong></td><td>Bridal</td><td>Sep 8, 2026</td><td><span class="status-badge contacted">Contacted</span></td><td><span class="avatar-sm">SK</span> Sara K.</td><td>1 day ago</td></tr>
+          <tr><td><strong>Amanda Foster</strong></td><td>Evening</td><td>Mar 30, 2026</td><td><span class="status-badge converted">Converted</span></td><td><span class="avatar-sm">JG</span> Janae G.</td><td>3 days ago</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CAMPAIGNS ═══════════════ -->
+<section id="campaigns">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">AI-Crafted Campaigns</div>
+      <h2 class="section-title">Zero Templates.<br>Every Message is Unique.</h2>
+      <p class="section-subtitle">Forget copy-paste blasts. You describe what you want to say, and Winnie writes a completely unique, personalized message for every single customer — using what she knows about their style, event, and preferences. Promotions, follow-ups, event reminders, re-engagement — all AI-written, all personal, all sent automatically.</p>
+    </div>
+    <div class="campaign-demo">
+      <div class="campaign-builder reveal reveal-delay-1">
+        <h4>Create a Campaign</h4>
+        <div class="campaign-types">
+          <div class="campaign-type selected"><div class="emoji">🎉</div><div class="type-name">Promotion</div></div>
+          <div class="campaign-type"><div class="emoji">📅</div><div class="type-name">Event Reminder</div></div>
+          <div class="campaign-type"><div class="emoji">💌</div><div class="type-name">Re-engagement</div></div>
+          <div class="campaign-type"><div class="emoji">🔄</div><div class="type-name">Follow-up</div></div>
+        </div>
+        <div class="campaign-targeting">
+          <div class="filter-label">Target Audience</div>
+          <div class="filter-chips">
+            <span class="filter-chip active">Bridal</span>
+            <span class="filter-chip active">Follow-up</span>
+            <span class="filter-chip">Prom</span>
+            <span class="filter-chip">New</span>
+            <span class="filter-chip active">Event in 30 days</span>
+            <span class="filter-chip">Contacted</span>
+          </div>
+        </div>
+        <div style="background:var(--bg-elevated);border-radius:10px;padding:16px;">
+          <div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Just tell Winnie what to say — she does the rest</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;font-style:italic;">"Let our bridal leads know about the Pronovias Spring trunk show next weekend — mention their specific dress interests if we know them"</div>
+        </div>
+        <div style="margin-top:12px;background:var(--bg-elevated);border-radius:10px;padding:14px;border-left:3px solid var(--champagne);">
+          <div style="font-size:11px;color:var(--champagne);font-weight:600;margin-bottom:6px;">NO TEMPLATES NEEDED</div>
+          <div style="font-size:12px;color:var(--text-tertiary);line-height:1.5;">Winnie writes a completely different message for each customer based on their preferences, history, and event details. Sarah gets a message about A-line gowns. Emily hears about trending prom styles. Every message feels personally written.</div>
+        </div>
+        <div style="margin-top:16px;text-align:center;">
+          <span class="dash-btn primary" id="btnLaunchCampaign" style="display:inline-block;padding:10px 24px;border-radius:10px;cursor:pointer;">Launch Campaign → 23 leads matched</span>
+        </div>
+      </div>
+      <div class="campaign-progress-panel reveal reveal-delay-2" id="campaignProgress">
+        <h4>Watch: AI writing unique messages live</h4>
+        <div class="progress-stats">
+          <div class="progress-stat sent"><div class="num" id="sentCount">0</div><div class="lbl">Sent</div></div>
+          <div class="progress-stat failed"><div class="num" id="failedCount">0</div><div class="lbl">Failed</div></div>
+          <div class="progress-stat responses"><div class="num" id="responseCount">0</div><div class="lbl">Responses</div></div>
+        </div>
+        <div class="progress-bar-container"><div class="progress-bar-fill" id="progressBar"></div></div>
+        <div id="messagePreviews">
+          <div class="message-preview" style="opacity:0.3;font-size:12px;text-align:center;color:var(--text-tertiary);padding:20px;">Scroll here to watch the campaign launch...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ INVENTORY ═══════════════ -->
+<section id="inventory">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Inventory & Commerce</div>
+      <h2 class="section-title">Your AI Knows<br>Every Dress in Stock</h2>
+      <p class="section-subtitle">Customers describe what they want in plain English. Winnie searches your entire catalog, finds the best matches, and sends checkout links — instantly.</p>
+    </div>
+    <div class="inventory-demo">
+      <div class="semantic-search-demo reveal reveal-delay-1">
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:16px;">Natural Language Search</h4>
+        <div class="search-input-mockup">
+          <span class="icon">🔍</span>
+          <span id="searchText"></span><span class="cursor"></span>
+        </div>
+        <div id="productResults"></div>
+      </div>
+      <div class="ecommerce-features reveal reveal-delay-2">
+        <div class="ecom-feature">
+          <div class="icon-box" style="background:var(--rose-glow);">👗</div>
+          <div>
+            <h5>Complete Product Catalog</h5>
+            <p>Designers, styles, sizes, colors, pricing — your entire inventory in one place. Your AI agent knows it all and recommends with confidence.</p>
+          </div>
+        </div>
+        <div class="ecom-feature">
+          <div class="icon-box" style="background:var(--green-glow);">💳</div>
+          <div>
+            <h5>Instant Checkout Links</h5>
+            <p>Winnie generates payment links during conversations. Customers can secure their dress with a deposit from a single text message.</p>
+          </div>
+        </div>
+        <div class="ecom-feature">
+          <div class="icon-box" style="background:var(--blue-glow);">🔗</div>
+          <div>
+            <h5>SMS-Friendly Product Links</h5>
+            <p>Short, clean URLs that link directly to full product pages. Perfect for texting recommendations that customers can browse on their phone.</p>
+          </div>
+        </div>
+        <div class="ecom-feature">
+          <div class="icon-box" style="background:var(--champagne-glow);">📅</div>
+          <div>
+            <h5>Appointment Booking</h5>
+            <p>Your AI can check available fitting slots and book appointments during voice calls or text conversations. No back-and-forth needed.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ SALES REP TOOLS ═══════════════ -->
+<section id="salesreps">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Sales Rep Tools</div>
+      <h2 class="section-title">Add a Lead<br>With a Single Text</h2>
+      <p class="section-subtitle">Your sales reps on the floor create leads instantly via SMS. No apps to open, no forms to fill — just text the customer info and Winnie does the rest.</p>
+    </div>
+    <div class="sales-demo">
+      <div class="quickadd-demo reveal reveal-delay-1">
+        <h4 style="font-size:15px;font-weight:600;margin-bottom:8px;">SMS Quick-Add</h4>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Sales reps text their unique code + customer info to the store number</p>
+        <div class="sms-mockup">
+          <div class="sms-bubble"><span class="code-badge">JANGO</span> Sarah Mitchell | 604-555-1234 | bridal | Looking for A-line, budget $2500</div>
+          <div class="sms-response">✅ Lead created! <strong>Sarah Mitchell</strong> (Bridal) assigned to Janae Gordon. Welcome message sent to customer automatically.</div>
+        </div>
+        <div style="margin-top:20px;">
+          <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;">Each rep gets a unique quick-add code</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><span class="code-badge">JANGO</span><span style="font-size:12px;color:var(--text-secondary);">← Janae Gordon</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center;"><span class="code-badge">SARJO</span><span style="font-size:12px;color:var(--text-secondary);">← Sara Johnson</span></div>
+        </div>
+      </div>
+      <div class="reveal reveal-delay-2">
+        <div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:16px;padding:24px;margin-bottom:20px;">
+          <h4 style="font-size:15px;font-weight:600;margin-bottom:16px;">Team Workload at a Glance</h4>
+          <div id="workloadChart">
+            <div class="workload-row"><span class="rep-name">Janae G.</span><div class="workload-bar-bg"><div class="workload-bar-fill" data-width="78"></div></div><span class="count">18 leads</span></div>
+            <div class="workload-row"><span class="rep-name">Sara K.</span><div class="workload-bar-bg"><div class="workload-bar-fill" data-width="52"></div></div><span class="count">12 leads</span></div>
+            <div class="workload-row"><span class="rep-name">Maria L.</span><div class="workload-bar-bg"><div class="workload-bar-fill" data-width="35"></div></div><span class="count">8 leads</span></div>
+          </div>
+        </div>
+        <div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:16px;padding:24px;">
+          <h4 style="font-size:15px;font-weight:600;margin-bottom:12px;">🤝 Human Takeover</h4>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">Any team member can jump into an AI conversation with one click. Messages queue during the handoff so nothing is ever lost. Release back to AI when you're done.</p>
+          <div style="margin-top:12px;display:flex;gap:8px;">
+            <span class="dash-btn primary" id="btnTakeOver" style="font-size:11px;padding:6px 14px;cursor:pointer;">Take Over Conversation</span>
+            <span class="dash-btn" id="btnRelease" style="font-size:11px;padding:6px 14px;cursor:pointer;">Release to AI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ VOICE AI ═══════════════ -->
+<section id="voice">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Voice AI</div>
+      <h2 class="section-title">A Phone Agent<br>That Actually Sells</h2>
+      <p class="section-subtitle">Winnie answers calls 24/7 with a natural, human-sounding voice. She knows your inventory, books appointments, texts product links to the caller, and escalates to your team when needed.</p>
+    </div>
+    <div class="voice-demo">
+      <div class="voice-visual reveal reveal-delay-1">
+        <div class="voice-wave"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+        <div class="voice-status">● Active Call — 2:34</div>
+        <div class="voice-transcript">"I found three beautiful A-line gowns in your budget. Let me text you the photos and a checkout link right now..."</div>
+        <div style="margin-top:24px;display:flex;gap:24px;font-size:12px;color:var(--text-tertiary);">
+          <span>📞 Inbound</span>
+          <span>📱 Outbound</span>
+          <span>📝 Transcribed</span>
+          <span>📊 Summarized</span>
+        </div>
+      </div>
+      <div class="voice-tools reveal reveal-delay-2">
+        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">What Winnie can do during a live call:</div>
+        <div class="voice-tool"><div class="tool-icon">🔍</div><div><div class="tool-name">Search Your Inventory</div><div class="tool-desc">Finds matching products in real time</div></div></div>
+        <div class="voice-tool"><div class="tool-icon">💳</div><div><div class="tool-name">Send Checkout Links</div><div class="tool-desc">Texts a payment link while still on the call</div></div></div>
+        <div class="voice-tool"><div class="tool-icon">📱</div><div><div class="tool-name">Text Product Photos</div><div class="tool-desc">Sends product links to the caller's phone</div></div></div>
+        <div class="voice-tool"><div class="tool-icon">📅</div><div><div class="tool-name">Book Appointments</div><div class="tool-desc">Checks availability and schedules fittings</div></div></div>
+        <div class="voice-tool"><div class="tool-icon">🔔</div><div><div class="tool-name">Alert Your Team</div><div class="tool-desc">Notifies the right person for a warm handoff</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ OWNER DASHBOARD ═══════════════ -->
+<section id="dashboard">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Owner Dashboard</div>
+      <h2 class="section-title">Complete Visibility.<br>Total Control.</h2>
+      <p class="section-subtitle">Everything your store needs in one place — leads, team, campaigns, analytics, settings. Updates stream in live, so you always see the latest.</p>
+    </div>
+    <div class="owner-features">
+      <div class="owner-feature reveal reveal-delay-1"><div class="live-dot"></div><div class="feature-icon">📊</div><h4>Pipeline Analytics</h4><p>Visual charts showing lead progression, conversion rates, and revenue trends. Know exactly where your business stands.</p></div>
+      <div class="owner-feature reveal reveal-delay-2"><div class="feature-icon">👥</div><h4>Team Management</h4><p>Create sales rep accounts, view workload distribution, and reassign leads for optimal balance across your team.</p></div>
+      <div class="owner-feature reveal reveal-delay-3"><div class="feature-icon">📈</div><h4>Campaign Performance</h4><p>See delivery rates, response rates, and revenue impact for every campaign you've ever sent.</p></div>
+      <div class="owner-feature reveal reveal-delay-1"><div class="feature-icon">⚙️</div><h4>Store Settings</h4><p>Configure phone numbers, store hours, auto-greeting messages, branding, and handoff preferences — all from one screen.</p></div>
+      <div class="owner-feature reveal reveal-delay-2"><div class="feature-icon">💬</div><h4>Live Conversation Monitor</h4><p>Watch AI conversations happening right now. Read transcripts. Jump in anytime. Review summaries of every interaction.</p></div>
+      <div class="owner-feature reveal reveal-delay-3"><div class="live-dot"></div><div class="feature-icon">⚡</div><h4>Real-Time Updates</h4><p>New leads, messages, campaign results, and status changes appear instantly. No refreshing needed — ever.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MULTI-STORE ═══════════════ -->
+<section id="multistore">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Multi-Store Ready</div>
+      <h2 class="section-title">One Platform.<br>Many Stores.</h2>
+      <p class="section-subtitle">Each store gets its own phone numbers, branding, inventory, and team. Fully isolated, fully independent — all managed from a single platform.</p>
+    </div>
+    <div class="tenancy-visual reveal reveal-delay-1">
+      <div class="tenant-card">
+        <div class="org-logo">AF</div>
+        <div class="org-name">After Five Fashion</div>
+        <div class="org-type">Bridal & Evening</div>
+        <div class="tenant-items">
+          <div class="tenant-item"><span class="check">✓</span> Own SMS & WhatsApp numbers</div>
+          <div class="tenant-item"><span class="check">✓</span> Custom branding & colors</div>
+          <div class="tenant-item"><span class="check">✓</span> 3 sales reps</div>
+          <div class="tenant-item"><span class="check">✓</span> 180+ inventory items</div>
+        </div>
+      </div>
+      <div class="tenant-card">
+        <div class="org-logo">BB</div>
+        <div class="org-name">Bella Bridal</div>
+        <div class="org-type">Bridal Boutique</div>
+        <div class="tenant-items">
+          <div class="tenant-item"><span class="check">✓</span> Own SMS & WhatsApp numbers</div>
+          <div class="tenant-item"><span class="check">✓</span> Custom branding & colors</div>
+          <div class="tenant-item"><span class="check">✓</span> 5 sales reps</div>
+          <div class="tenant-item"><span class="check">✓</span> 300+ inventory items</div>
+        </div>
+      </div>
+      <div class="tenant-card">
+        <div class="org-logo">EP</div>
+        <div class="org-name">Elegance Prom</div>
+        <div class="org-type">Prom & Formal</div>
+        <div class="tenant-items">
+          <div class="tenant-item"><span class="check">✓</span> Own SMS & WhatsApp numbers</div>
+          <div class="tenant-item"><span class="check">✓</span> Custom branding & colors</div>
+          <div class="tenant-item"><span class="check">✓</span> 2 sales reps</div>
+          <div class="tenant-item"><span class="check">✓</span> 95 inventory items</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ RESULTS ═══════════════ -->
+<section id="results">
+  <div class="section-inner" style="text-align:center;">
+    <div class="reveal">
+      <div class="section-label" style="justify-content:center;">The Bottom Line</div>
+      <h2 class="section-title" style="margin-left:auto;margin-right:auto;">What If You Never<br>Missed Another Lead?</h2>
+      <p class="section-subtitle" style="margin:0 auto 16px;max-width:580px;">Every text gets answered. Every call gets picked up. Every customer feels remembered. Every promotion feels personal. That's Winnie.</p>
+    </div>
+    <div class="results-grid reveal reveal-delay-1">
+      <div class="result-card">
+        <div class="big-num" style="color:var(--green);">24/7</div>
+        <div class="result-label">Always on — SMS, WhatsApp,<br>& Voice, nights and weekends</div>
+      </div>
+      <div class="result-card">
+        <div class="big-num" style="color:var(--champagne);"><1s</div>
+        <div class="result-label">Instant response with full<br>customer context & history</div>
+      </div>
+      <div class="result-card">
+        <div class="big-num" style="color:var(--rose-bright);">0</div>
+        <div class="result-label">Missed leads — every inquiry<br>gets a thoughtful response</div>
+      </div>
+      <div class="result-card">
+        <div class="big-num" style="color:var(--blue);">100%</div>
+        <div class="result-label">AI-personalized — no templates,<br>no copy-paste, ever</div>
+      </div>
+    </div>
+    <div class="reveal reveal-delay-2" style="margin-top:48px;">
+      <p style="font-size:15px;color:var(--text-secondary);max-width:640px;margin:0 auto;line-height:1.8;">Winnie replaces your CRM, your bulk SMS tool, your after-hours answering service, and your follow-up reminders — with a single AI that knows your inventory, remembers your customers, and never takes a day off.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<section id="footer">
+  <div class="footer-content">
+    <div class="footer-logo">Winnie</div>
+    <div class="footer-tagline">Your AI salesperson. Your CRM. Your campaign engine.<br>All in one — built for stores that sell dreams.</div>
+    <a href="mailto:div@heywinnie.ai?subject=Winnie%20Demo%20Request" class="footer-cta">
+      Schedule a Walkthrough
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <div class="footer-contact"><p><a href="mailto:div@heywinnie.ai">div@heywinnie.ai</a></p></div>
+    <div class="footer-brand">Built by Analog Intelligence</div>
+  </div>
+</section>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- Add Lead Modal -->
+<div class="modal-overlay" id="modalAddLead">
+  <div class="modal-panel">
+    <button class="modal-close" onclick="closeModal('modalAddLead')">×</button>
+    <div id="addLeadForm">
+      <div class="modal-title">Add New Lead</div>
+      <div class="modal-subtitle">Create a new customer lead. Winnie will automatically send a personalized welcome message.</div>
+      <div class="form-group">
+        <label class="form-label">Customer Name</label>
+        <input class="form-input" placeholder="e.g. Sarah Mitchell" id="newLeadName">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input class="form-input" placeholder="604-555-1234">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Event Type</label>
+          <select class="form-select">
+            <option>Bridal</option>
+            <option>Prom</option>
+            <option>Evening</option>
+            <option>Mother of the Bride</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Event Date</label>
+          <input class="form-input" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Assign To</label>
+          <select class="form-select">
+            <option>Auto-assign (balanced)</option>
+            <option>Janae Gordon</option>
+            <option>Sara Johnson</option>
+            <option>Maria Lopez</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input class="form-input" placeholder="e.g. Looking for A-line in blush, budget $2,500">
+      </div>
+      <button class="modal-btn" onclick="submitAddLead()">Create Lead & Send Welcome Message</button>
+    </div>
+    <div id="addLeadSuccess" style="display:none;">
+      <div class="modal-success">
+        <div class="check-circle">✓</div>
+        <h3>Lead Created!</h3>
+        <p id="addLeadSuccessMsg">Sarah Mitchell has been added as a new Bridal lead and assigned to Janae Gordon. A personalized AI welcome message is being sent now.</p>
+        <button class="modal-btn" style="margin-top:20px;width:auto;display:inline-block;padding:10px 24px;" onclick="closeModal('modalAddLead')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lead Detail Modal -->
+<div class="modal-overlay" id="modalLeadDetail">
+  <div class="modal-panel wide">
+    <button class="modal-close" onclick="closeModal('modalLeadDetail')">×</button>
+    <div class="lead-detail-header">
+      <div class="lead-detail-avatar" id="ldAvatar">SM</div>
+      <div>
+        <div class="lead-detail-name" id="ldName">Sarah Mitchell</div>
+        <div class="lead-detail-meta" id="ldMeta">Bridal · Jun 15, 2026 · Assigned to Janae G.</div>
+      </div>
+      <div style="margin-left:auto;"><span class="status-badge followup" id="ldStatus">Follow-up</span></div>
+    </div>
+    <div class="lead-detail-tabs">
+      <button class="lead-detail-tab active" onclick="showLeadTab(this,'conversation')">Conversation</button>
+      <button class="lead-detail-tab" onclick="showLeadTab(this,'summary')">AI Summary</button>
+      <button class="lead-detail-tab" onclick="showLeadTab(this,'activity')">Activity</button>
+    </div>
+    <div id="leadTabConversation">
+      <div class="lead-convo-time">Today, 2:14 PM</div>
+      <div class="lead-convo-bubble customer">Hi! I saw your trunk show ad — do you have any A-line dresses in blush?</div>
+      <div class="lead-convo-bubble agent">Hi Sarah! Yes, we have several gorgeous blush A-line options! Our Pronovias Estrella ($2,350) is a customer favorite — it has the most beautiful lace detailing. Want me to text you photos?</div>
+      <div class="lead-convo-bubble customer">Yes please! And what sizes do you have?</div>
+      <div class="lead-convo-bubble agent">Sending you 3 options now with photos and pricing! The Estrella comes in sizes 2-16. I can also book you a Saturday fitting if you'd like to try them on. 💕</div>
+      <div class="lead-convo-time">Today, 2:31 PM</div>
+      <div class="lead-convo-bubble customer">These are beautiful! Can I come in Saturday around 2pm?</div>
+      <div class="lead-convo-bubble agent">Saturday at 2pm works perfectly! I've booked a private fitting room for you. You'll be working with Janae — she's amazing with A-line styles. See you then, Sarah!</div>
+    </div>
+    <div id="leadTabSummary" style="display:none;">
+      <div class="lead-ai-summary" style="margin-bottom:12px;">
+        <h5>AI-Generated Summary</h5>
+        <p>Sarah is an engaged bridal customer shopping for her June 2026 wedding. She has a strong preference for A-line silhouettes in blush/ivory tones with a budget around $2,500. She responded very positively to the Pronovias Estrella and has a fitting booked for Saturday at 2pm with Janae. High likelihood of conversion — she's emotionally invested and moving quickly.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:var(--bg-elevated);border-radius:10px;padding:14px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Sentiment</div>
+          <div style="font-size:14px;font-weight:600;color:var(--green);">Very Positive</div>
+        </div>
+        <div style="background:var(--bg-elevated);border-radius:10px;padding:14px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Conversion Likelihood</div>
+          <div style="font-size:14px;font-weight:600;color:var(--champagne);">High</div>
+        </div>
+        <div style="background:var(--bg-elevated);border-radius:10px;padding:14px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Key Interest</div>
+          <div style="font-size:14px;font-weight:600;">A-line, Blush</div>
+        </div>
+        <div style="background:var(--bg-elevated);border-radius:10px;padding:14px;">
+          <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Budget</div>
+          <div style="font-size:14px;font-weight:600;">~$2,500</div>
+        </div>
+      </div>
+    </div>
+    <div id="leadTabActivity" style="display:none;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:5px;flex-shrink:0;"></div>
+          <div><div style="font-size:13px;font-weight:500;">Fitting booked — Saturday 2:00 PM</div><div style="font-size:11px;color:var(--text-tertiary);">Today, 2:31 PM</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:5px;flex-shrink:0;"></div>
+          <div><div style="font-size:13px;font-weight:500;">3 product links sent via SMS</div><div style="font-size:11px;color:var(--text-tertiary);">Today, 2:18 PM</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--champagne);margin-top:5px;flex-shrink:0;"></div>
+          <div><div style="font-size:13px;font-weight:500;">AI conversation — 6 messages exchanged</div><div style="font-size:11px;color:var(--text-tertiary);">Today, 2:14 PM</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--rose);margin-top:5px;flex-shrink:0;"></div>
+          <div><div style="font-size:13px;font-weight:500;">Status changed: New → Follow-up</div><div style="font-size:11px;color:var(--text-tertiary);">Today, 2:14 PM</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--text-tertiary);margin-top:5px;flex-shrink:0;"></div>
+          <div><div style="font-size:13px;font-weight:500;">Lead created via SMS Quick-Add by Janae G.</div><div style="font-size:11px;color:var(--text-tertiary);">Yesterday, 4:45 PM</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:5px;flex-shrink:0;"></div>
+          <div><div style="font-size:13px;font-weight:500;">AI welcome message sent</div><div style="font-size:11px;color:var(--text-tertiary);">Yesterday, 4:45 PM</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Manage Team Modal -->
+<div class="modal-overlay" id="modalTeam">
+  <div class="modal-panel">
+    <button class="modal-close" onclick="closeModal('modalTeam')">×</button>
+    <div class="modal-title">Your Team</div>
+    <div class="modal-subtitle">Manage sales reps, view workload, and create new accounts.</div>
+    <div class="team-member">
+      <div class="tm-avatar" style="background:linear-gradient(135deg,var(--rose),var(--blush));">JG</div>
+      <div class="tm-info"><div class="tm-name">Janae Gordon</div><div class="tm-role">Sales Rep · <span class="code-badge" style="font-size:10px;">JANGO</span></div></div>
+      <div class="tm-stats"><div class="tm-leads">18</div><div class="tm-label">active leads</div></div>
+    </div>
+    <div class="team-member">
+      <div class="tm-avatar" style="background:linear-gradient(135deg,var(--champagne),var(--gold));">SK</div>
+      <div class="tm-info"><div class="tm-name">Sara Johnson</div><div class="tm-role">Sales Rep · <span class="code-badge" style="font-size:10px;">SARJO</span></div></div>
+      <div class="tm-stats"><div class="tm-leads">12</div><div class="tm-label">active leads</div></div>
+    </div>
+    <div class="team-member">
+      <div class="tm-avatar" style="background:linear-gradient(135deg,var(--blue),var(--purple));">ML</div>
+      <div class="tm-info"><div class="tm-name">Maria Lopez</div><div class="tm-role">Sales Rep · <span class="code-badge" style="font-size:10px;">MARLO</span></div></div>
+      <div class="tm-stats"><div class="tm-leads">8</div><div class="tm-label">active leads</div></div>
+    </div>
+    <button class="modal-btn" style="margin-top:16px;" onclick="closeModal('modalTeam')">+ Add Sales Rep</button>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modalSettings">
+  <div class="modal-panel">
+    <button class="modal-close" onclick="closeModal('modalSettings')">×</button>
+    <div class="modal-title">Store Settings</div>
+    <div class="modal-subtitle">Configure your store's phone numbers, hours, and AI preferences.</div>
+    <div class="form-group">
+      <label class="form-label">Store Name</label>
+      <input class="form-input" value="After Five Fashion">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">SMS Number</label>
+        <input class="form-input" value="+1 (604) 262-5735">
+      </div>
+      <div class="form-group">
+        <label class="form-label">WhatsApp Number</label>
+        <input class="form-input" value="+1 (604) 262-5735">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Store Hours</label>
+        <input class="form-input" value="Mon-Sat 10am-7pm">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Timezone</label>
+        <select class="form-select"><option>Pacific Time (PT)</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Auto-Greeting Message</label>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="width:36px;height:20px;border-radius:10px;background:var(--green);position:relative;cursor:pointer;">
+          <div style="width:16px;height:16px;border-radius:50%;background:white;position:absolute;top:2px;right:2px;"></div>
+        </div>
+        <span style="font-size:12px;color:var(--green);">Enabled</span>
+      </div>
+      <input class="form-input" value="Thanks for reaching out to After Five Fashion! We'll be with you shortly. 💕">
+    </div>
+    <button class="modal-btn" onclick="closeModal('modalSettings')">Save Settings</button>
+  </div>
+</div>
+
+<!-- Voice Tool Modal -->
+<div class="modal-overlay" id="modalVoiceTool">
+  <div class="modal-panel">
+    <button class="modal-close" onclick="closeModal('modalVoiceTool')">×</button>
+    <div id="vtContent"></div>
+  </div>
+</div>
+
+<script>
+const sections = [
+  { id: 'hero', label: 'Home' },
+  { id: 'conversations', label: 'AI Chat' },
+  { id: 'context', label: 'Customer Memory' },
+  { id: 'crm', label: 'CRM' },
+  { id: 'campaigns', label: 'Campaigns' },
+  { id: 'inventory', label: 'Inventory' },
+  { id: 'salesreps', label: 'Sales Reps' },
+  { id: 'voice', label: 'Voice AI' },
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'multistore', label: 'Multi-Store' },
+  { id: 'results', label: 'Results' },
+];
+
+const navDotsEl = document.getElementById('navDots');
+sections.forEach(s => {
+  const dot = document.createElement('button');
+  dot.className = 'nav-dot'; dot.dataset.section = s.id;
+  dot.innerHTML = `<span class="tooltip">${s.label}</span>`;
+  dot.onclick = () => document.getElementById(s.id).scrollIntoView({ behavior: 'smooth' });
+  navDotsEl.appendChild(dot);
+});
+
+// Reveal on scroll
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+// Active nav dot
+const secObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      document.querySelectorAll('.nav-dot').forEach(d => d.classList.remove('active'));
+      const dot = document.querySelector(`.nav-dot[data-section="${e.target.id}"]`);
+      if (dot) dot.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => { const el = document.getElementById(s.id); if (el) secObs.observe(el); });
+
+// Chat demo
+const conversations = {
+  sms: [
+    { type: 'customer', text: "Hi! I'm looking for a wedding dress 👰", delay: 0 },
+    { type: 'system', text: 'Winnie is typing...', delay: 800 },
+    { type: 'agent', text: "Welcome to After Five Fashion! 💕 I'd love to help you find the perfect dress. What style are you drawn to — A-line, ballgown, mermaid, or something else?", delay: 1600 },
+    { type: 'customer', text: "A-line in blush, budget around $2,500", delay: 3200 },
+    { type: 'agent', text: "Great taste! I found 3 beautiful options for you:", delay: 4200, hasProduct: true },
+    { type: 'agent', text: "", delay: 5400, hasPayment: true },
+  ],
+  whatsapp: [
+    { type: 'customer', text: "Hey, I saw the Pronovias trunk show ad!", delay: 0 },
+    { type: 'agent', text: "Hi there! Yes, the Pronovias Spring collection just arrived! 🌸 Are you shopping for a specific occasion?", delay: 1000 },
+    { type: 'customer', text: "My daughter's prom — she wants something in emerald green", delay: 2200 },
+    { type: 'agent', text: "How exciting! I have 5 gorgeous emerald options in stock. Let me send you our top picks with photos and prices. What size is she?", delay: 3400 },
+  ],
+  voice: [
+    { type: 'system', text: '📞 Incoming call from Sarah Mitchell', delay: 0 },
+    { type: 'system', text: '✨ Returning customer recognized — full context loaded', delay: 800 },
+    { type: 'agent', text: '"Welcome back Sarah! I remember you were looking at blush A-line dresses. We just got some beautiful new pieces — would you like to hear about them?"', delay: 1600 },
+    { type: 'customer', text: '"Yes! And can you text me the links?"', delay: 3200 },
+    { type: 'agent', text: '"Absolutely! I\'m sending three options to your phone right now with photos and pricing. I can also book you a fitting this Saturday."', delay: 4200 },
+    { type: 'system', text: '📱 Product links texted  ·  💳 Checkout link sent  ·  📅 Fitting booked', delay: 5600 },
+  ]
+};
+let chatTimeout = null;
+function renderChat(channel) {
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = '';
+  if (chatTimeout) clearTimeout(chatTimeout);
+  conversations[channel].forEach((msg, i) => {
+    chatTimeout = setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = `chat-msg ${msg.type}`;
+      let html = msg.text;
+      if (msg.hasProduct) html += `<div class="product-card-mini"><div class="img-placeholder">👗</div><div class="info"><div class="pname">Pronovias Estrella</div><div class="price">$2,350</div><div class="tag">98% match</div></div></div>`;
+      if (msg.hasPayment) html = `Shall I send you a checkout link? You can secure it with a deposit today.<div class="payment-link-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Pay $500 Deposit</div>`;
+      div.innerHTML = html;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }, msg.delay);
+  });
+}
+document.querySelectorAll('.channel-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.channel-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderChat(tab.dataset.channel);
+  });
+});
+const chatObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) { renderChat('sms'); chatObs.disconnect(); }
+}, { threshold: 0.3 });
+chatObs.observe(document.getElementById('conversations'));
+
+// Context flow animation
+let cStep = 0;
+const ctxObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) {
+    const steps = document.querySelectorAll('.context-step');
+    function go() {
+      steps.forEach(s => s.classList.remove('active'));
+      if (cStep < steps.length) { steps[cStep].classList.add('active'); cStep++; setTimeout(go, 600); }
+      else { cStep = 0; setTimeout(go, 2000); }
+    }
+    go(); ctxObs.disconnect();
+  }
+}, { threshold: 0.3 });
+ctxObs.observe(document.getElementById('contextFlow'));
+
+// Pipeline
+const pipObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) {
+    document.querySelectorAll('.pipeline-bar').forEach(b => b.style.height = b.dataset.height + '%');
+    pipObs.disconnect();
+  }
+}, { threshold: 0.3 });
+pipObs.observe(document.getElementById('pipelineFunnel'));
+
+// Campaign progress
+const campMsgs = [
+  { to: 'Sarah Mitchell (Bridal, A-line)', msg: "Hi Sarah! The Pronovias trunk show is this Saturday! I remember you loved those A-line silhouettes in blush — we're setting aside three new pieces in your size. Want me to book a fitting room for you?" },
+  { to: 'Rachel Torres (Bridal, Ballgown)', msg: "Rachel! Gorgeous new ivory ballgowns just arrived — they'd be perfect for your September wedding. I picked out two that match the sweetheart neckline you loved last time. Want photos?" },
+  { to: 'Amanda Foster (Evening)', msg: "Amanda, our spring evening collection just dropped and there's a stunning Jovani piece that screams your style — sleek, floor-length, in that deep emerald you love. Shall I send a link?" },
+  { to: 'Emily Chen (Prom)', msg: "Emily, prom season is here! 🎉 We just got gorgeous new styles in your size range. Since you mentioned wanting something fun and sparkly, I think you'll love the new sequin collection. Want to see?" },
+];
+let campDone = false;
+const campObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting && !campDone) {
+    campDone = true;
+    const pv = document.getElementById('messagePreviews'); pv.innerHTML = '';
+    let sent = 0;
+    campMsgs.forEach((m, i) => {
+      setTimeout(() => {
+        sent++;
+        document.getElementById('sentCount').textContent = sent;
+        document.getElementById('progressBar').style.width = ((sent / campMsgs.length) * 100) + '%';
+        const d = document.createElement('div'); d.className = 'message-preview';
+        d.innerHTML = `<div class="to">To: ${m.to}</div><div class="msg">${m.msg}</div><div class="status-sent">✓ Delivered · <span style="color:var(--champagne);">AI-crafted</span></div>`;
+        pv.appendChild(d);
+        setTimeout(() => d.classList.add('visible'), 50);
+        if (i === 1) setTimeout(() => { document.getElementById('responseCount').textContent = '1'; }, 800);
+      }, i * 1200);
+    });
+    campObs.disconnect();
+  }
+}, { threshold: 0.3 });
+campObs.observe(document.getElementById('campaignProgress'));
+
+// Semantic search
+const sq = 'Show me blush A-line dresses under $3,000';
+let sDone = false;
+const sObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting && !sDone) {
+    sDone = true;
+    const te = document.getElementById('searchText'), re = document.getElementById('productResults');
+    let idx = 0;
+    function type() {
+      if (idx < sq.length) { te.textContent += sq[idx]; idx++; setTimeout(type, 40 + Math.random() * 30); }
+      else setTimeout(show, 500);
+    }
+    function show() {
+      [{e:'👗',n:'Pronovias Estrella',d:'Pronovias',dt:'A-line · Blush · Sizes 2-16',p:'$2,350',s:'98%'},
+       {e:'👗',n:'Maggie Sottero Belle',d:'Maggie Sottero',dt:'A-line · Blush/Ivory · Sizes 4-20',p:'$2,680',s:'94%'},
+       {e:'👗',n:'Morilee Dreaming',d:'Morilee',dt:'A-line · Blush Pink · Sizes 2-14',p:'$1,890',s:'91%'}
+      ].forEach((p, i) => {
+        setTimeout(() => {
+          const d = document.createElement('div'); d.className = 'product-result';
+          d.style.animation = 'msgAppear 0.4s var(--ease-out-expo) forwards';
+          d.innerHTML = `<div class="product-img">${p.e}</div><div class="product-info"><h5>${p.n}</h5><div class="designer">${p.d}</div><div class="details">${p.dt}</div><div class="price-tag">${p.p}</div></div><div class="match-score">${p.s} match</div>`;
+          re.appendChild(d);
+        }, i * 300);
+      });
+    }
+    type(); sObs.disconnect();
+  }
+}, { threshold: 0.3 });
+sObs.observe(document.getElementById('inventory'));
+
+// Workload bars
+const wObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) {
+    document.querySelectorAll('.workload-bar-fill').forEach(b => b.style.width = b.dataset.width + '%');
+    wObs.disconnect();
+  }
+}, { threshold: 0.3 });
+wObs.observe(document.getElementById('workloadChart'));
+
+// ══ MODAL SYSTEM ══
+function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow = ''; }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+});
+
+// ══ ADD LEAD ══
+function submitAddLead() {
+  const name = document.getElementById('newLeadName').value || 'New Customer';
+  document.getElementById('addLeadSuccessMsg').textContent =
+    `${name} has been added as a new lead and assigned to Janae Gordon. A personalized AI welcome message is being sent now.`;
+  document.getElementById('addLeadForm').style.display = 'none';
+  document.getElementById('addLeadSuccess').style.display = 'block';
+}
+document.getElementById('modalAddLead').addEventListener('transitionend', function() {
+  if (!this.classList.contains('open')) {
+    document.getElementById('addLeadForm').style.display = 'block';
+    document.getElementById('addLeadSuccess').style.display = 'none';
+    document.getElementById('newLeadName').value = '';
+  }
+});
+
+// ══ LEAD DETAIL ══
+const leadData = {
+  'Sarah Mitchell': { initials: 'SM', event: 'Bridal', date: 'Jun 15, 2026', rep: 'Janae G.', status: 'followup', statusText: 'Follow-up' },
+  'Emily Chen': { initials: 'EC', event: 'Prom', date: 'May 22, 2026', rep: 'Unassigned', status: 'new', statusText: 'New' },
+  'Rachel Torres': { initials: 'RT', event: 'Bridal', date: 'Sep 8, 2026', rep: 'Sara K.', status: 'contacted', statusText: 'Contacted' },
+  'Amanda Foster': { initials: 'AF', event: 'Evening', date: 'Mar 30, 2026', rep: 'Janae G.', status: 'converted', statusText: 'Converted' },
+};
+function openLeadDetail(name) {
+  const d = leadData[name]; if (!d) return;
+  document.getElementById('ldAvatar').textContent = d.initials;
+  document.getElementById('ldName').textContent = name;
+  document.getElementById('ldMeta').textContent = `${d.event} · ${d.date} · Assigned to ${d.rep}`;
+  document.getElementById('ldStatus').className = `status-badge ${d.status}`;
+  document.getElementById('ldStatus').textContent = d.statusText;
+  document.querySelectorAll('.lead-detail-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  document.getElementById('leadTabConversation').style.display = 'block';
+  document.getElementById('leadTabSummary').style.display = 'none';
+  document.getElementById('leadTabActivity').style.display = 'none';
+  openModal('modalLeadDetail');
+}
+function showLeadTab(btn, tab) {
+  document.querySelectorAll('.lead-detail-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('leadTabConversation').style.display = tab==='conversation' ? 'block' : 'none';
+  document.getElementById('leadTabSummary').style.display = tab==='summary' ? 'block' : 'none';
+  document.getElementById('leadTabActivity').style.display = tab==='activity' ? 'block' : 'none';
+}
+
+// Wire up lead table rows
+document.querySelectorAll('.leads-table tbody tr').forEach(row => {
+  row.addEventListener('click', () => {
+    const name = row.querySelector('td strong')?.textContent;
+    if (name) openLeadDetail(name);
+  });
+});
+
+// ══ DASHBOARD BUTTONS ══
+document.querySelectorAll('.dash-btn').forEach(btn => {
+  const text = btn.textContent.trim();
+  if (text === '+ Add Lead') btn.addEventListener('click', () => openModal('modalAddLead'));
+  if (text === 'Manage Team') btn.addEventListener('click', () => openModal('modalTeam'));
+  if (text === 'Campaigns') btn.addEventListener('click', () => document.getElementById('campaigns').scrollIntoView({ behavior: 'smooth' }));
+});
+
+// ══ CAMPAIGN TYPE TOGGLE ══
+document.querySelectorAll('.campaign-type').forEach(ct => {
+  ct.addEventListener('click', () => {
+    document.querySelectorAll('.campaign-type').forEach(c => c.classList.remove('selected'));
+    ct.classList.add('selected');
+  });
+});
+
+// ══ FILTER CHIP TOGGLE ══
+document.querySelectorAll('.filter-chip').forEach(fc => {
+  fc.addEventListener('click', () => fc.classList.toggle('active'));
+});
+
+// ══ LAUNCH CAMPAIGN BUTTON ══
+document.getElementById('btnLaunchCampaign')?.addEventListener('click', function() {
+  // Reset
+  document.getElementById('sentCount').textContent = '0';
+  document.getElementById('failedCount').textContent = '0';
+  document.getElementById('responseCount').textContent = '0';
+  document.getElementById('progressBar').style.width = '0%';
+  const pv = document.getElementById('messagePreviews'); pv.innerHTML = '';
+  this.textContent = 'Sending...';
+  this.style.opacity = '0.7';
+  const self = this;
+  let sent = 0;
+  campMsgs.forEach((m, i) => {
+    setTimeout(() => {
+      sent++;
+      document.getElementById('sentCount').textContent = sent;
+      document.getElementById('progressBar').style.width = ((sent / campMsgs.length) * 100) + '%';
+      const d = document.createElement('div'); d.className = 'message-preview';
+      d.innerHTML = `<div class="to">To: ${m.to}</div><div class="msg">${m.msg}</div><div class="status-sent">✓ Delivered · <span style="color:var(--champagne);">AI-crafted</span></div>`;
+      pv.appendChild(d);
+      setTimeout(() => d.classList.add('visible'), 50);
+      if (i === 1) setTimeout(() => { document.getElementById('responseCount').textContent = '1'; }, 800);
+      if (i === campMsgs.length - 1) {
+        setTimeout(() => { self.textContent = '✓ Campaign Complete! Relaunch?'; self.style.opacity = '1'; }, 600);
+      }
+    }, i * 1200);
+  });
+});
+
+// ══ HUMAN CONTROL TOGGLE ══
+(function() {
+  const takeBtn = document.getElementById('btnTakeOver');
+  const relBtn = document.getElementById('btnRelease');
+  if (!takeBtn || !relBtn) return;
+  let isHuman = false;
+  takeBtn.addEventListener('click', () => {
+    if (!isHuman) {
+      isHuman = true;
+      takeBtn.textContent = '● You Are in Control';
+      takeBtn.style.background = 'var(--green)'; takeBtn.style.color = 'var(--bg-deep)'; takeBtn.style.border = 'none';
+      relBtn.style.background = 'var(--rose-glow)'; relBtn.style.color = 'var(--rose-bright)'; relBtn.style.borderColor = 'var(--rose)';
+    }
+  });
+  relBtn.addEventListener('click', () => {
+    if (isHuman) {
+      isHuman = false;
+      takeBtn.textContent = 'Take Over Conversation';
+      takeBtn.style.background = ''; takeBtn.style.color = ''; takeBtn.style.border = '';
+      relBtn.style.background = ''; relBtn.style.color = ''; relBtn.style.borderColor = '';
+    }
+  });
+})();
+
+// ══ VOICE TOOL DETAILS ══
+const voiceToolInfo = {
+  'Search Your Inventory': { icon: '🔍', title: 'Search Your Inventory', desc: 'During a live call, a customer says "Do you have anything in blush?" — Winnie instantly searches your entire product catalog and responds with matching options, sizes, and prices. No hold music, no "let me check."', example: '"I found 3 blush options for you! The Pronovias Estrella at $2,350 is stunning — it\'s an A-line with lace detailing in sizes 2 through 16."' },
+  'Send Checkout Links': { icon: '💳', title: 'Instant Checkout Links', desc: 'While still on the phone, Winnie generates a secure payment link and texts it to the customer. They can put down a deposit before they even hang up.', example: '"I just texted you a checkout link! You can secure the Estrella with a $500 deposit right from your phone."' },
+  'Text Product Photos': { icon: '📱', title: 'Text Product Photos', desc: 'Voice conversations are great, but customers want to see the dress. Winnie texts product page links to the caller mid-call so they can browse visuals while chatting.', example: '"Check your messages — I just sent you photos of all three gowns with full details and pricing!"' },
+  'Book Appointments': { icon: '📅', title: 'Book Appointments', desc: 'Winnie checks your real-time availability and books fittings on the spot. No need to call back, no scheduling back-and-forth.', example: '"I have Saturday at 2pm and 4pm open. Shall I book the 2pm? You\'ll be working with Janae — she\'s wonderful!"' },
+  'Alert Your Team': { icon: '🔔', title: 'Alert Your Team', desc: 'When a conversation needs a human touch — a VIP customer, a complex request, or an escalation — Winnie notifies the right team member instantly for a warm handoff.', example: '"Let me connect you with Janae, our bridal specialist. She\'ll have all our conversation notes. One moment!"' },
+};
+document.querySelectorAll('.voice-tool').forEach(vt => {
+  vt.addEventListener('click', () => {
+    const name = vt.querySelector('.tool-name')?.textContent;
+    const info = voiceToolInfo[name]; if (!info) return;
+    document.getElementById('vtContent').innerHTML = `
+      <div style="font-size:32px;margin-bottom:16px;">${info.icon}</div>
+      <div class="modal-title">${info.title}</div>
+      <div class="modal-subtitle">${info.desc}</div>
+      <div style="background:var(--bg-elevated);border-radius:12px;padding:16px;border-left:3px solid var(--champagne);">
+        <div style="font-size:10px;color:var(--champagne);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:600;">What the customer hears</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;font-style:italic;">${info.example}</div>
+      </div>
+      <button class="modal-btn" style="margin-top:20px;" onclick="closeModal('modalVoiceTool')">Got it</button>
+    `;
+    openModal('modalVoiceTool');
+  });
+});
+
+// ══ OWNER FEATURE CARDS ══
+document.querySelectorAll('.owner-feature').forEach(f => {
+  f.style.cursor = 'pointer';
+  const title = f.querySelector('h4')?.textContent;
+  f.addEventListener('click', () => {
+    if (title?.includes('Pipeline')) document.getElementById('crm').scrollIntoView({ behavior: 'smooth' });
+    if (title?.includes('Team')) openModal('modalTeam');
+    if (title?.includes('Campaign')) document.getElementById('campaigns').scrollIntoView({ behavior: 'smooth' });
+    if (title?.includes('Settings')) openModal('modalSettings');
+    if (title?.includes('Conversation')) document.getElementById('conversations').scrollIntoView({ behavior: 'smooth' });
+    if (title?.includes('Real-Time')) document.getElementById('crm').scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+// ══ PRODUCT RESULT CLICK ══
+document.addEventListener('click', e => {
+  const pr = e.target.closest('.product-result');
+  if (pr) {
+    const name = pr.querySelector('h5')?.textContent || 'This dress';
+    pr.style.borderColor = 'var(--rose)';
+    pr.style.background = 'var(--rose-glow)';
+    const badge = pr.querySelector('.match-score');
+    if (badge) { badge.textContent = '✓ Selected'; badge.style.background = 'var(--green-glow)'; badge.style.color = 'var(--green)'; }
+    setTimeout(() => { pr.style.borderColor = ''; pr.style.background = ''; if(badge){badge.textContent = badge.dataset.score || '98%';badge.style.background='';badge.style.color='';} }, 2000);
+  }
+});
+
+// ══ PAYMENT BUTTON ══
+document.addEventListener('click', e => {
+  const pb = e.target.closest('.payment-link-btn');
+  if (pb) {
+    const orig = pb.innerHTML;
+    pb.style.background = 'var(--green)';
+    pb.innerHTML = '✓ Link sent to customer!';
+    setTimeout(() => { pb.style.background = ''; pb.innerHTML = orig; }, 2500);
+  }
+});
+</script>
+</body>
+</html>
