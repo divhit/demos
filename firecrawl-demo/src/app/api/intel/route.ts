@@ -377,14 +377,147 @@ const MOCK_META: Record<string, object> = {
 // ── Route handler ──────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { type, input, apiKey, demoMode } = body as {
+  const { type, input, apiKey, demoMode, step, sessionId, extractionPrompt } = body as {
     type: string;
     input: string;
     apiKey?: string;
     demoMode: boolean;
+    step?: string;
+    sessionId?: string;
+    extractionPrompt?: string;
   };
 
   const resolvedKey = (apiKey || process.env.FIRECRAWL_API_KEY || "").trim();
+
+  // ── Browser sandbox multi-step flow ──────────────────────────
+  if (type === "browser" && step) {
+    // Demo mode browser steps
+    if (demoMode || !resolvedKey) {
+      if (step === "start") {
+        await new Promise((r) => setTimeout(r, 800));
+        return NextResponse.json({
+          sessionId: "demo_sess_" + Date.now(),
+          liveViewUrl: null, // no live view in demo mode
+        });
+      }
+      if (step === "execute") {
+        await new Promise((r) => setTimeout(r, MOCK_DELAYS.browser || 3800));
+        return NextResponse.json({
+          success: true,
+          data: MOCK_DATA.browser ?? {},
+          meta: { demo_mode: true, ...(MOCK_META.browser ?? {}), time_ms: MOCK_DELAYS.browser },
+        });
+      }
+      if (step === "close") {
+        return NextResponse.json({ success: true });
+      }
+    }
+
+    // Live mode browser steps
+    try {
+      const FirecrawlApp = (await import("@mendable/firecrawl-js")).default;
+      const app = new FirecrawlApp({ apiKey: resolvedKey });
+
+      if (step === "start") {
+        const session = await app.browser({ ttl: 120, activityTtl: 60 });
+        return NextResponse.json({
+          sessionId: session.id,
+          liveViewUrl: session.liveViewUrl || null,
+        });
+      }
+
+      if (step === "execute" && sessionId) {
+        const start = Date.now();
+        // Navigate to URL and extract content
+        const prompt = extractionPrompt || "Extract the main content from the page.";
+        const execResult = await app.browserExecute(sessionId, {
+          code: `
+const page = (await browser.contexts())[0].pages()[0];
+await page.goto("${input}", { waitUntil: "networkidle", timeout: 30000 });
+await page.waitForTimeout(2000);
+const title = await page.title();
+const url = page.url();
+const text = await page.evaluate(() => document.body.innerText.slice(0, 5000));
+return JSON.stringify({ title, url, content: text });
+          `.trim(),
+          language: "node",
+        });
+        const elapsed = Date.now() - start;
+
+        // Parse the execution result
+        let pageData: Record<string, unknown> = {};
+        try {
+          const resultStr = (execResult as unknown as Record<string, unknown>).result as string;
+          if (resultStr) pageData = JSON.parse(resultStr);
+        } catch { /* ignore parse errors */ }
+
+        // Now do a structured extraction using scrape with the user's prompt
+        let extracted: unknown = null;
+        try {
+          const scrapeResult = await app.scrape(input, {
+            formats: [
+              {
+                type: "json" as const,
+                schema: {
+                  type: "object",
+                  properties: {
+                    page_title: { type: "string" },
+                    items: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          title: { type: "string" },
+                          description: { type: "string" },
+                          link: { type: "string" },
+                          metadata: { type: "string" },
+                        },
+                      },
+                    },
+                    summary: { type: "string" },
+                  },
+                },
+                prompt,
+              },
+            ],
+            actions: [
+              { type: "wait", milliseconds: 2000 },
+              { type: "scrape" },
+            ],
+          });
+          const sr = scrapeResult as Record<string, unknown>;
+          extracted = sr.json ?? sr.extract;
+        } catch { /* extraction is optional, we still have raw content */ }
+
+        const extractedObj = (extracted ?? pageData) as Record<string, unknown>;
+        return NextResponse.json({
+          success: true,
+          data: {
+            extracted: extractedObj,
+            page_title: pageData.title || (extractedObj as Record<string, unknown>).page_title || input,
+            url: pageData.url || input,
+          },
+          meta: { demo_mode: false, time_ms: elapsed, method: "Browser Sandbox" },
+        });
+      }
+
+      if (step === "close" && sessionId) {
+        await app.deleteBrowser(sessionId);
+        return NextResponse.json({ success: true });
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Browser error";
+      // Fall back to demo data on error
+      if (step === "execute") {
+        return NextResponse.json({
+          success: true,
+          data: MOCK_DATA.browser ?? {},
+          meta: { demo_mode: true, fallback: true, live_error: message, ...(MOCK_META.browser ?? {}), time_ms: 0 },
+        });
+      }
+      return NextResponse.json({ success: false, error: message }, { status: 200 });
+    }
+  }
 
   // Demo mode — return mock data with realistic delay
   if (demoMode || !resolvedKey) {
@@ -499,52 +632,12 @@ export async function POST(req: NextRequest) {
       }
 
       case "browser": {
-        // Use scrape with browser actions: wait for JS, screenshot, then extract
-        const browserResult = await app.scrape(input, {
-          formats: [
-            "markdown",
-            "screenshot",
-            {
-              type: "json" as const,
-              schema: {
-                type: "object",
-                properties: {
-                  page_title: { type: "string" },
-                  main_heading: { type: "string" },
-                  items: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        title: { type: "string" },
-                        description: { type: "string" },
-                        link: { type: "string" },
-                        metadata: { type: "string" },
-                      },
-                    },
-                  },
-                  summary: { type: "string" },
-                },
-              },
-              prompt:
-                "Extract the main content from this page: the page title, main heading, and a list of the key items/entries/articles visible on the page with their titles, descriptions, links, and any metadata (dates, scores, authors, etc). Also provide a brief summary of the page content.",
-            },
-          ],
-          actions: [
-            { type: "wait", milliseconds: 3000 },
-            { type: "screenshot", fullPage: true },
-            { type: "scrape" },
-          ],
-        });
-        const br = browserResult as Record<string, unknown>;
-        data = {
-          extracted: br.json ?? br.extract,
-          screenshot: br.screenshot ? "[screenshot captured]" : null,
-          markdown_preview: typeof br.markdown === "string" ? br.markdown.slice(0, 500) : null,
-          url: input,
-          actions_executed: ["wait 3s for JS render", "full-page screenshot", "scrape content"],
-        };
-        break;
+        // Browser is handled above via step-based flow
+        // This fallback handles legacy single-call mode
+        return NextResponse.json(
+          { success: false, error: "Browser demo requires step parameter (start/execute/close)" },
+          { status: 400 }
+        );
       }
 
       case "knowledge": {

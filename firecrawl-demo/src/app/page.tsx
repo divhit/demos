@@ -93,20 +93,20 @@ const DEMOS: DemoConfig[] = [
   {
     id: "browser",
     title: "Browser Automation",
-    subtitle: "Render JS-heavy pages, interact, screenshot, and extract",
+    subtitle: "Cloud browser sandbox with live view — watch it work",
     description:
-      "Scrape dynamic, JavaScript-rendered pages that static scraping can't reach. The managed browser loads the page, waits for JS to execute, takes a full-page screenshot, and extracts structured content — all in one API call. Works on SPAs, dashboards, and interactive sites.",
+      "Launch a managed cloud browser, watch it navigate in real-time via embedded live view, and extract exactly the data you need. The sandbox renders JavaScript, handles SPAs, and lets you tell it what to extract — no hardcoded schemas.",
     icon: "🌐",
     gradient: "from-cyan-500/20 to-cyan-600/5",
     borderColor: "border-cyan-500/20 hover:border-cyan-500/40",
-    inputLabel: "URL to render and extract",
-    inputPlaceholder: "https://example.com",
+    inputLabel: "Website URL",
+    inputPlaceholder: "https://github.com/trending",
     presets: [
       { label: "GitHub Trending", value: "https://github.com/trending" },
       { label: "Hacker News", value: "https://news.ycombinator.com" },
       { label: "Product Hunt", value: "https://www.producthunt.com" },
     ],
-    method: "Browser Actions",
+    method: "Browser Sandbox",
   },
   {
     id: "knowledge",
@@ -347,8 +347,22 @@ function DemoRunner({
   onBack: () => void;
 }) {
   const [input, setInput] = useState("");
+  const [extractPrompt, setExtractPrompt] = useState("");
   const [result, setResult] = useState<RunResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [browserPhase, setBrowserPhase] = useState<"idle" | "starting" | "navigating" | "done">("idle");
+  const [liveViewUrl, setLiveViewUrl] = useState<string | null>(null);
+
+  const isBrowser = demo.id === "browser";
+
+  const callApi = async (body: Record<string, unknown>) => {
+    const res = await fetch("/api/intel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...body, apiKey, demoMode }),
+    });
+    return res.json();
+  };
 
   const run = useCallback(async () => {
     const value = input.trim();
@@ -356,20 +370,43 @@ function DemoRunner({
 
     setLoading(true);
     setResult(null);
+    setLiveViewUrl(null);
+    setBrowserPhase("idle");
 
     try {
-      const res = await fetch("/api/intel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: demo.id,
+      if (isBrowser) {
+        // Step 1: Create browser session → get live view URL
+        setBrowserPhase("starting");
+        const startRes = await callApi({
+          type: "browser",
+          step: "start",
           input: value,
-          apiKey,
-          demoMode,
-        }),
-      });
-      const data = await res.json();
-      setResult(data);
+        });
+
+        if (startRes.liveViewUrl) {
+          setLiveViewUrl(startRes.liveViewUrl);
+        }
+
+        // Step 2: Execute navigation + extraction
+        setBrowserPhase("navigating");
+        const execRes = await callApi({
+          type: "browser",
+          step: "execute",
+          input: value,
+          sessionId: startRes.sessionId,
+          extractionPrompt: extractPrompt.trim() || "Extract the main content: page title, key items or entries with titles, descriptions, links, and any metadata.",
+        });
+        setResult(execRes);
+        setBrowserPhase("done");
+
+        // Step 3: Clean up session (fire and forget)
+        if (startRes.sessionId) {
+          callApi({ type: "browser", step: "close", sessionId: startRes.sessionId }).catch(() => {});
+        }
+      } else {
+        const data = await callApi({ type: demo.id, input: value });
+        setResult(data);
+      }
     } catch (err: unknown) {
       setResult({
         success: false,
@@ -377,14 +414,17 @@ function DemoRunner({
         meta: { demo_mode: true, time_ms: 0 },
         error: err instanceof Error ? err.message : "Request failed",
       });
+      setBrowserPhase("done");
     } finally {
       setLoading(false);
     }
-  }, [input, apiKey, demoMode, demo.id]);
+  }, [input, extractPrompt, apiKey, demoMode, demo.id, isBrowser]);
 
   const selectPreset = (value: string) => {
     setInput(value);
     setResult(null);
+    setLiveViewUrl(null);
+    setBrowserPhase("idle");
   };
 
   return (
@@ -444,11 +484,11 @@ function DemoRunner({
       </div>
 
       {/* Input */}
-      <div className="mb-6">
+      <div className="mb-4">
         <label className="block text-sm font-medium mb-2">
           {demo.inputLabel}
         </label>
-        {demo.id === "vendor" || demo.id === "browser" ? (
+        {demo.id === "vendor" ? (
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -462,11 +502,30 @@ function DemoRunner({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={demo.inputPlaceholder}
-            onKeyDown={(e) => e.key === "Enter" && run()}
+            onKeyDown={(e) => e.key === "Enter" && !isBrowser && run()}
             className="w-full px-4 py-3 bg-card border border-border rounded-xl text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 placeholder:text-muted transition-all"
           />
         )}
       </div>
+
+      {/* Browser extraction prompt */}
+      {isBrowser && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">
+            What do you want to extract?
+          </label>
+          <textarea
+            value={extractPrompt}
+            onChange={(e) => setExtractPrompt(e.target.value)}
+            placeholder="e.g. Extract all trending repositories with their names, descriptions, star counts, and languages"
+            rows={2}
+            className="w-full px-4 py-3 bg-card border border-border rounded-xl text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 placeholder:text-muted transition-all resize-none"
+          />
+          <p className="text-xs text-muted mt-1.5">Leave empty for general content extraction</p>
+        </div>
+      )}
+
+      {!isBrowser && <div className="mb-6" />}
 
       {/* Run button */}
       <button
@@ -479,19 +538,48 @@ function DemoRunner({
             <span className="spin-slow inline-block">
               <IntelIcon className="w-4 h-4" />
             </span>
-            Processing
+            {isBrowser
+              ? browserPhase === "starting"
+                ? "Launching browser"
+                : "Navigating & extracting"
+              : "Processing"}
             <LoadingDots />
           </>
         ) : (
           <>
             <IntelIcon className="w-4 h-4" />
-            Run Extraction
+            {isBrowser ? "Launch Browser" : "Run Extraction"}
           </>
         )}
       </button>
 
-      {/* Loading state */}
-      {loading && (
+      {/* Browser Live View */}
+      {isBrowser && liveViewUrl && (
+        <div className="mt-8 animate-fade-in-up" style={{ opacity: 0 }}>
+          <div className="flex items-center gap-2 mb-3">
+            <span className={`inline-block w-2 h-2 rounded-full ${browserPhase === "done" ? "bg-muted" : "bg-emerald-400 animate-pulse"}`} />
+            <span className="text-sm font-medium">
+              {browserPhase === "done" ? "Session complete" : "Live Browser View"}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {browserPhase === "starting" && "— creating sandbox session..."}
+              {browserPhase === "navigating" && "— navigating and extracting data..."}
+              {browserPhase === "done" && "— extraction finished"}
+            </span>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden bg-black">
+            <iframe
+              src={liveViewUrl}
+              className="w-full h-[450px]"
+              allow="autoplay"
+              sandbox="allow-scripts allow-same-origin"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Loading state (non-browser) */}
+      {loading && !isBrowser && (
         <div className="mt-8 space-y-3">
           <div className="h-4 w-3/4 rounded animate-shimmer" />
           <div className="h-4 w-1/2 rounded animate-shimmer" />
@@ -500,8 +588,6 @@ function DemoRunner({
           <p className="text-xs text-muted mt-4">
             {demo.id === "vendor"
               ? "Agent is searching the web, navigating vendor sites, and extracting data..."
-              : demo.id === "browser"
-              ? "Browser session active — navigating, interacting, and extracting data..."
               : demo.id === "knowledge"
               ? "Crawling pages, extracting structured knowledge..."
               : demo.id === "competitor"
