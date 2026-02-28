@@ -93,19 +93,20 @@ const DEMOS: DemoConfig[] = [
   {
     id: "browser",
     title: "Browser Automation",
-    subtitle: "AI-controlled browser for complex workflows",
+    subtitle: "Render JS-heavy pages, interact, screenshot, and extract",
     description:
-      "Managed browser sandbox in a secure cloud environment. Navigate portals behind logins, click through multi-step forms, interact with JS-heavy apps, and extract data that static scraping can't reach. Includes live view for real-time monitoring.",
+      "Scrape dynamic, JavaScript-rendered pages that static scraping can't reach. The managed browser loads the page, waits for JS to execute, takes a full-page screenshot, and extracts structured content — all in one API call. Works on SPAs, dashboards, and interactive sites.",
     icon: "🌐",
     gradient: "from-cyan-500/20 to-cyan-600/5",
     borderColor: "border-cyan-500/20 hover:border-cyan-500/40",
-    inputLabel: "Task Description",
-    inputPlaceholder: "Log into portal.example.com, navigate to billing page, extract all recent invoices",
+    inputLabel: "URL to render and extract",
+    inputPlaceholder: "https://example.com",
     presets: [
-      { label: "Portal Login + Extract", value: "Navigate to https://portal.contoso.com, log in with demo credentials, go to the Billing section, and extract all invoice data from the account dashboard" },
-      { label: "Multi-Step Form Fill", value: "Go to https://procurement.northwind.com/rfq, fill out the vendor registration form with company details, submit it, and capture the confirmation number" },
+      { label: "GitHub Trending", value: "https://github.com/trending" },
+      { label: "Hacker News", value: "https://news.ycombinator.com" },
+      { label: "Product Hunt", value: "https://www.producthunt.com" },
     ],
-    method: "Browser Sandbox",
+    method: "Browser Actions",
   },
   {
     id: "knowledge",
@@ -119,8 +120,8 @@ const DEMOS: DemoConfig[] = [
     inputLabel: "Website URL to Crawl",
     inputPlaceholder: "https://support.example.com",
     presets: [
-      { label: "Microsoft Support", value: "https://support.microsoft.com/en-us/microsoft-365" },
-      { label: "Stripe Docs", value: "https://docs.stripe.com" },
+      { label: "Tailwind CSS Docs", value: "https://tailwindcss.com/docs" },
+      { label: "Next.js Docs", value: "https://nextjs.org/docs" },
     ],
     method: "Crawl + Extract",
   },

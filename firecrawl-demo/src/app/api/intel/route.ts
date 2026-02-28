@@ -339,48 +339,22 @@ const MOCK_DATA: Record<string, unknown> = {
       "Microsoft Teams offers the strongest value proposition for existing Microsoft shops, bundling the full Office suite at the same price point as Slack. Google Workspace leads on included AI features. Slack remains preferred for developer-centric and cross-platform organizations.",
   },
   browser: {
-    session: {
-      id: "sess_f7a2b9c1d4e8",
-      profile: "vendor-portal",
-      ttl_seconds: 300,
-      live_view_url: "https://browser.webintel.ai/live/sess_f7a2b9c1d4e8",
-    },
-    actions_performed: [
-      { step: 1, action: "navigate", target: "https://portal.contoso.com/login", status: "success", duration_ms: 820 },
-      { step: 2, action: "fill", target: "#email input", value: "demo@northwind.com", status: "success", duration_ms: 45 },
-      { step: 3, action: "fill", target: "#password input", value: "••••••••", status: "success", duration_ms: 38 },
-      { step: 4, action: "click", target: "Submit button", status: "success", duration_ms: 1240 },
-      { step: 5, action: "wait_for_navigation", target: "/dashboard", status: "success", duration_ms: 680 },
-      { step: 6, action: "click", target: "Billing nav link", status: "success", duration_ms: 450 },
-      { step: 7, action: "wait_for_selector", target: ".invoice-table", status: "success", duration_ms: 320 },
-      { step: 8, action: "extract", target: "Invoice table (12 rows)", status: "success", duration_ms: 180 },
-    ],
-    extracted_data: {
-      account: {
-        name: "Northwind Traders Inc.",
-        account_number: "NWT-2024-8842",
-        subscription: "Enterprise Plan",
-        renewal_date: "2025-06-15",
-        monthly_spend: 12450.00,
-        active_users: 127,
-        storage_used: "4.2 TB of 10 TB",
-      },
-      recent_invoices: [
-        { id: "INV-2025-0201", date: "2025-02-01", amount: 12450.00, status: "Paid", payment_method: "ACH" },
-        { id: "INV-2025-0101", date: "2025-01-01", amount: 11890.00, status: "Paid", payment_method: "ACH" },
-        { id: "INV-2024-1201", date: "2024-12-01", amount: 11890.00, status: "Paid", payment_method: "Wire" },
-        { id: "INV-2024-1101", date: "2024-11-01", amount: 10250.00, status: "Paid", payment_method: "ACH" },
-        { id: "INV-2024-1001", date: "2024-10-01", amount: 10250.00, status: "Paid", payment_method: "ACH" },
+    extracted: {
+      page_title: "Trending repositories on GitHub today",
+      main_heading: "Trending",
+      items: [
+        { title: "microsoft/TypeScript", description: "TypeScript is a superset of JavaScript that compiles to clean JavaScript output.", link: "https://github.com/microsoft/TypeScript", metadata: "12,450 stars today · TypeScript" },
+        { title: "vercel/next.js", description: "The React Framework for the Web — used by some of the world's largest companies.", link: "https://github.com/vercel/next.js", metadata: "8,320 stars today · JavaScript" },
+        { title: "tailwindlabs/tailwindcss", description: "A utility-first CSS framework for rapid UI development.", link: "https://github.com/tailwindlabs/tailwindcss", metadata: "5,180 stars today · CSS" },
+        { title: "anthropics/claude-code", description: "An agentic coding tool that lives in your terminal.", link: "https://github.com/anthropics/claude-code", metadata: "4,900 stars today · TypeScript" },
+        { title: "openai/whisper", description: "Robust Speech Recognition via Large-Scale Weak Supervision.", link: "https://github.com/openai/whisper", metadata: "3,210 stars today · Python" },
       ],
-      billing_summary: {
-        total_ytd: 24340.00,
-        average_monthly: 12170.00,
-        next_invoice_date: "2025-03-01",
-        payment_method_on_file: "ACH — Chase Business ****4821",
-      },
+      summary: "GitHub Trending page showing the most popular repositories today, ranked by daily star count. Dominated by developer tools and AI/ML projects.",
     },
-    session_duration_seconds: 3.8,
-    credits_used: 8,
+    screenshot: "[screenshot captured]",
+    markdown_preview: "# Trending\n\nSee what the GitHub community is most excited about today.\n\n## microsoft/TypeScript\nTypeScript is a superset of JavaScript...",
+    url: "https://github.com/trending",
+    actions_executed: ["wait 3s for JS render", "full-page screenshot", "scrape content"],
   },
 };
 
@@ -525,22 +499,51 @@ export async function POST(req: NextRequest) {
       }
 
       case "browser": {
-        const session = await (app as unknown as {
-          browser: (opts?: Record<string, unknown>) => Promise<{ id: string }>;
-          browserExecute: (id: string, opts: Record<string, unknown>) => Promise<unknown>;
-        }).browser({ ttl: 300, idleTimeout: 60 });
-        const execResult = await (app as unknown as {
-          browserExecute: (id: string, opts: Record<string, unknown>) => Promise<unknown>;
-        }).browserExecute(session.id, {
-          code: `
-            await page.goto("${input.split(" ")[0]}");
-            const title = await page.title();
-            const content = await page.content();
-            return { title, url: page.url(), content_length: content.length };
-          `,
-          language: "node",
+        // Use scrape with browser actions: wait for JS, screenshot, then extract
+        const browserResult = await app.scrape(input, {
+          formats: [
+            "markdown",
+            "screenshot",
+            {
+              type: "json" as const,
+              schema: {
+                type: "object",
+                properties: {
+                  page_title: { type: "string" },
+                  main_heading: { type: "string" },
+                  items: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        description: { type: "string" },
+                        link: { type: "string" },
+                        metadata: { type: "string" },
+                      },
+                    },
+                  },
+                  summary: { type: "string" },
+                },
+              },
+              prompt:
+                "Extract the main content from this page: the page title, main heading, and a list of the key items/entries/articles visible on the page with their titles, descriptions, links, and any metadata (dates, scores, authors, etc). Also provide a brief summary of the page content.",
+            },
+          ],
+          actions: [
+            { type: "wait", milliseconds: 3000 },
+            { type: "screenshot", fullPage: true },
+            { type: "scrape" },
+          ],
         });
-        data = { session_id: session.id, result: execResult };
+        const br = browserResult as Record<string, unknown>;
+        data = {
+          extracted: br.json ?? br.extract,
+          screenshot: br.screenshot ? "[screenshot captured]" : null,
+          markdown_preview: typeof br.markdown === "string" ? br.markdown.slice(0, 500) : null,
+          url: input,
+          actions_executed: ["wait 3s for JS render", "full-page screenshot", "scrape content"],
+        };
         break;
       }
 
@@ -549,11 +552,19 @@ export async function POST(req: NextRequest) {
           limit: 30,
           scrapeOptions: { formats: ["markdown"] },
         });
-        const crawlData = crawlResult as { data?: Array<{ url?: string; markdown?: string }> };
+        const crawlData = crawlResult as {
+          data?: Array<{
+            markdown?: string;
+            metadata?: { url?: string; title?: string; description?: string };
+          }>;
+        };
         data = {
+          source_url: input,
           pages_crawled: crawlData.data?.length ?? 0,
           pages: crawlData.data?.slice(0, 10).map((p) => ({
-            url: p.url,
+            url: p.metadata?.url ?? "unknown",
+            title: p.metadata?.title ?? "",
+            description: p.metadata?.description ?? "",
             content_preview: p.markdown?.slice(0, 300),
           })),
         };
