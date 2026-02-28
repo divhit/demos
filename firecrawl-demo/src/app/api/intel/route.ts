@@ -449,27 +449,69 @@ export async function POST(req: NextRequest) {
                   invoice: {
                     type: "object",
                     properties: {
-                      number: { type: "string" },
-                      date_issued: { type: "string" },
-                      date_due: { type: "string" },
-                      vendor: { type: "object" },
-                      bill_to: { type: "object" },
-                      line_items: { type: "array" },
+                      number: { type: "string", description: "Invoice number" },
+                      date_issued: { type: "string", description: "Invoice date in YYYY-MM-DD format" },
+                      date_due: { type: "string", description: "Payment due date in YYYY-MM-DD format" },
+                      currency: { type: "string", description: "Currency code e.g. CAD, USD" },
+                      vendor: {
+                        type: "object",
+                        properties: {
+                          name: { type: "string" },
+                          address: { type: "string" },
+                          phone: { type: "string" },
+                          email: { type: "string" },
+                          website: { type: "string" },
+                        },
+                      },
+                      bill_to: {
+                        type: "object",
+                        properties: {
+                          name: { type: "string" },
+                          customer_number: { type: "string" },
+                          address: { type: "string" },
+                          customer_ref_1: { type: "string" },
+                          customer_ref_2: { type: "string" },
+                        },
+                      },
+                      line_items: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            description: { type: "string" },
+                            subtotal: { type: "number" },
+                            gst: { type: "number" },
+                            hst: { type: "number" },
+                            pst_qst: { type: "number" },
+                            total: { type: "number" },
+                          },
+                        },
+                      },
                       subtotal: { type: "number" },
-                      tax_amount: { type: "number" },
+                      total_tax: { type: "number" },
                       total_due: { type: "number" },
-                      payment_terms: { type: "string" },
+                      payment_terms: { type: "string", description: "Payment terms e.g. Net 15, due date info" },
+                      late_payment_fee: { type: "string", description: "Late payment penalty rate" },
+                      payment_methods: {
+                        type: "array",
+                        items: { type: "string" },
+                      },
                     },
                   },
                 },
               },
               prompt:
-                "Extract all invoice data: vendor info, billing details, every line item, subtotals, taxes, and payment terms.",
+                "Extract ALL invoice data from this PDF: invoice number, dates (issued and due), vendor/sender info, bill-to/customer info including customer number, every line item with its category and amounts (subtotal, taxes, total), overall totals, payment terms, late fees, and accepted payment methods. Be thorough — extract every field visible on the invoice.",
             },
           ],
           parsers: [{ type: "pdf", mode: "auto" }],
         });
-        data = result;
+        // Return the structured JSON extraction, fall back to markdown
+        const scrapeResult = result as Record<string, unknown>;
+        data = scrapeResult.json ?? scrapeResult.extract ?? {
+          extracted_markdown: scrapeResult.markdown,
+          note: "Structured extraction unavailable — raw content returned",
+        };
         break;
       }
 

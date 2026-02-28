@@ -59,8 +59,8 @@ const DEMOS: DemoConfig[] = [
     inputLabel: "PDF Invoice URL",
     inputPlaceholder: "https://vendor.example.com/invoices/INV-2024-0847.pdf",
     presets: [
+      { label: "Canada Post Sample Invoice", value: "https://www.canadapost-postescanada.ca/cpc/doc/en/postal-services/sample-pdf-invoice.pdf" },
       { label: "Contoso Invoice PDF", value: "https://contoso.com/invoices/INV-2024-0847.pdf" },
-      { label: "Scanned Invoice (OCR)", value: "https://northwindtraders.com/scanned/receipt-dec2024.pdf" },
     ],
     method: "PDF Parser V2",
   },
