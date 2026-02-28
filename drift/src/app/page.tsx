@@ -88,48 +88,58 @@ export default function DriftPage() {
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
 
-          let eventType = "";
-          for (const line of lines) {
-            if (line.startsWith("event: ")) {
-              eventType = line.slice(7).trim();
-            } else if (line.startsWith("data: ") && eventType) {
-              const data = JSON.parse(line.slice(6));
+          // SSE events are delimited by double newlines
+          const parts = buffer.split("\n\n");
+          buffer = parts.pop() ?? "";
 
-              switch (eventType) {
-                case "interpreting":
-                  setInterpretation(data as VibeInterpretation);
-                  setUIState("searching");
-                  break;
-                case "searching":
-                  setPlaces(data as DriftPlace[]);
-                  setUIState("analyzing");
-                  break;
-                case "analyzing": {
-                  const update = data as DriftPlaceUpdate;
-                  setPlaces((prev) =>
-                    prev.map((p) =>
-                      p.id === update.placeId
-                        ? { ...p, vibeAnalysis: update.vibeAnalysis }
-                        : p
-                    )
-                  );
-                  break;
-                }
-                case "events":
-                  setEvents(data as DriftEvent[]);
-                  break;
-                case "complete":
-                  setUIState("results");
-                  break;
-                case "error":
-                  setError(data.message);
-                  setUIState("idle");
-                  break;
+          for (const part of parts) {
+            const lines = part.split("\n");
+            let eventType = "";
+            let dataStr = "";
+
+            for (const line of lines) {
+              if (line.startsWith("event: ")) {
+                eventType = line.slice(7).trim();
+              } else if (line.startsWith("data: ")) {
+                dataStr += line.slice(6);
               }
-              eventType = "";
+            }
+
+            if (!eventType || !dataStr) continue;
+
+            const data = JSON.parse(dataStr);
+
+            switch (eventType) {
+              case "interpreting":
+                setInterpretation(data as VibeInterpretation);
+                setUIState("searching");
+                break;
+              case "searching":
+                setPlaces(data as DriftPlace[]);
+                setUIState("analyzing");
+                break;
+              case "analyzing": {
+                const update = data as DriftPlaceUpdate;
+                setPlaces((prev) =>
+                  prev.map((p) =>
+                    p.id === update.placeId
+                      ? { ...p, vibeAnalysis: update.vibeAnalysis }
+                      : p
+                  )
+                );
+                break;
+              }
+              case "events":
+                setEvents(data as DriftEvent[]);
+                break;
+              case "complete":
+                setUIState("results");
+                break;
+              case "error":
+                setError(data.message);
+                setUIState("idle");
+                break;
             }
           }
         }
