@@ -24,7 +24,6 @@ interface DemoConfig {
   inputPlaceholder: string;
   presets: DemoPreset[];
   method: string;
-  codePreview: string;
 }
 
 interface RunMeta {
@@ -53,7 +52,7 @@ const DEMOS: DemoConfig[] = [
     title: "PDF Invoice Processor",
     subtitle: "Parse any PDF with AI + OCR — 3x faster",
     description:
-      "Firecrawl's PDF Parser V2 is rebuilt in Rust for 3x faster parsing. Supports three modes: fast (text-only), auto (smart OCR fallback), and ocr (forced OCR for scanned documents). Extract structured invoice data from any PDF — vendor info, line items, totals — even from scanned paper invoices.",
+      "AI-powered PDF parser built in Rust for 3x faster parsing. Supports three modes: fast (text-only), auto (smart OCR fallback), and ocr (forced OCR for scanned documents). Extract structured invoice data from any PDF — vendor info, line items, totals — even from scanned paper invoices.",
     icon: "📄",
     gradient: "from-orange-500/20 to-orange-600/5",
     borderColor: "border-orange-500/20 hover:border-orange-500/40",
@@ -63,31 +62,14 @@ const DEMOS: DemoConfig[] = [
       { label: "Contoso Invoice PDF", value: "https://contoso.com/invoices/INV-2024-0847.pdf" },
       { label: "Scanned Invoice (OCR)", value: "https://northwindtraders.com/scanned/receipt-dec2024.pdf" },
     ],
-    method: "/scrape + PDF Parser V2",
-    codePreview: `const app = new FirecrawlApp({ apiKey });
-
-// PDF Parser V2 — Rust-based, 3x faster, 3 modes
-const result = await app.scrape(url, {
-  formats: [
-    "markdown",
-    {
-      type: "json",
-      schema: invoiceSchema,
-      prompt: "Extract all invoice data: vendor, line items, totals"
-    }
-  ],
-  parsePDF: "auto"  // "fast" | "auto" | "ocr"
-  // fast  → pure text extraction (fastest)
-  // auto  → text first, OCR fallback if needed (default)
-  // ocr   → forced OCR for scanned documents
-});`,
+    method: "PDF Parser V2",
   },
   {
     id: "vendor",
     title: "Vendor Research Agent",
     subtitle: "AI agent that researches the web for you",
     description:
-      "Describe what you need — the Firecrawl Agent autonomously searches the web, navigates vendor sites, and returns structured comparison data. No URLs required. Powered by FIRE-1.",
+      "Describe what you need — our AI agent autonomously searches the web, navigates vendor sites, and returns structured comparison data. No URLs required.",
     icon: "🔍",
     gradient: "from-blue-500/20 to-blue-600/5",
     borderColor: "border-blue-500/20 hover:border-blue-500/40",
@@ -106,26 +88,14 @@ const result = await app.scrape(url, {
           "Compare AWS, Azure, and Google Cloud pricing for a startup with 10 developers needing compute, storage, and CI/CD",
       },
     ],
-    method: "/agent (FIRE-1)",
-    codePreview: `// The agent searches the web autonomously — no URLs needed
-const result = await fetch("https://api.firecrawl.dev/v1/agent", {
-  method: "POST",
-  headers: {
-    "Authorization": \`Bearer \${apiKey}\`,
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    prompt: "Compare enterprise CRM pricing across Salesforce, HubSpot, and Dynamics 365",
-    maxCredits: 100
-  })
-});`,
+    method: "AI Research Agent",
   },
   {
     id: "browser",
     title: "Browser Automation",
     subtitle: "AI-controlled browser for complex workflows",
     description:
-      "Firecrawl's managed Browser Sandbox runs Playwright or agent-browser CLI in a secure cloud environment. Navigate portals behind logins, click through multi-step forms, interact with JS-heavy apps, and extract data that static scraping can't reach. Includes live view for real-time monitoring.",
+      "Managed browser sandbox in a secure cloud environment. Navigate portals behind logins, click through multi-step forms, interact with JS-heavy apps, and extract data that static scraping can't reach. Includes live view for real-time monitoring.",
     icon: "🌐",
     gradient: "from-cyan-500/20 to-cyan-600/5",
     borderColor: "border-cyan-500/20 hover:border-cyan-500/40",
@@ -135,53 +105,14 @@ const result = await fetch("https://api.firecrawl.dev/v1/agent", {
       { label: "Portal Login + Extract", value: "Navigate to https://portal.contoso.com, log in with demo credentials, go to the Billing section, and extract all invoice data from the account dashboard" },
       { label: "Multi-Step Form Fill", value: "Go to https://procurement.northwind.com/rfq, fill out the vendor registration form with company details, submit it, and capture the confirmation number" },
     ],
-    method: "/browser sandbox",
-    codePreview: `const app = new FirecrawlApp({ apiKey });
-
-// Create a managed browser session
-const session = await app.browser({
-  ttl: 300,            // max 5 minutes
-  idleTimeout: 60,     // close after 1 min idle
-  profile: "vendor-portal",  // persist login state
-  saveChanges: true
-});
-
-// Execute Playwright code remotely
-const result = await app.browserExecute(session.id, {
-  code: \`
-    await page.goto("https://portal.contoso.com/login");
-    await page.fill("#email", "demo@company.com");
-    await page.fill("#password", process.env.PORTAL_PASS);
-    await page.click("button[type=submit]");
-    await page.waitForURL("**/dashboard");
-
-    // Navigate to billing
-    await page.click("text=Billing");
-    await page.waitForSelector(".invoice-table");
-
-    // Extract structured data
-    return await page.evaluate(() => {
-      const rows = document.querySelectorAll(".invoice-row");
-      return Array.from(rows).map(r => ({
-        id: r.querySelector(".inv-id").textContent,
-        date: r.querySelector(".inv-date").textContent,
-        amount: r.querySelector(".inv-amount").textContent,
-        status: r.querySelector(".inv-status").textContent,
-      }));
-    });
-  \`,
-  language: "node"
-});
-
-// Live view URL for real-time monitoring
-console.log(session.liveViewUrl);`,
+    method: "Browser Sandbox",
   },
   {
     id: "knowledge",
     title: "Knowledge Base Miner",
     subtitle: "Crawl a site, build structured knowledge",
     description:
-      "Give Firecrawl a website URL — it crawls the site, extracts key information, and builds a structured knowledge base with categories, articles, FAQs, and contact info.",
+      "Provide a website URL — the system crawls the entire site, extracts key information, and builds a structured knowledge base with categories, articles, FAQs, and contact info.",
     icon: "📚",
     gradient: "from-emerald-500/20 to-emerald-600/5",
     borderColor: "border-emerald-500/20 hover:border-emerald-500/40",
@@ -191,30 +122,14 @@ console.log(session.liveViewUrl);`,
       { label: "Microsoft Support", value: "https://support.microsoft.com/en-us/microsoft-365" },
       { label: "Stripe Docs", value: "https://docs.stripe.com" },
     ],
-    method: "/crawl + /extract",
-    codePreview: `const app = new FirecrawlApp({ apiKey });
-
-// Step 1: Crawl the entire site
-const crawl = await app.crawlUrl(url, { limit: 50 });
-
-// Step 2: Extract structured knowledge from crawled pages
-const kb = await app.extract({
-  urls: crawl.data.map(p => p.url),
-  prompt: "Extract FAQ entries, product info, and contact details",
-  schema: {
-    categories: [{
-      name: "string",
-      articles: [{ title: "string", summary: "string" }]
-    }]
-  }
-});`,
+    method: "Crawl + Extract",
   },
   {
     id: "competitor",
     title: "Competitive Intelligence",
     subtitle: "Track and compare competitor data",
     description:
-      "Monitor competitor pricing, features, and positioning. Firecrawl extracts structured data from multiple URLs simultaneously using parallel extraction with wildcard support.",
+      "Monitor competitor pricing, features, and positioning. Extracts structured data from multiple URLs simultaneously using parallel processing with wildcard support.",
     icon: "📊",
     gradient: "from-purple-500/20 to-purple-600/5",
     borderColor: "border-purple-500/20 hover:border-purple-500/40",
@@ -233,27 +148,7 @@ const kb = await app.extract({
           "https://asana.com/pricing, https://monday.com/pricing, https://clickup.com/pricing",
       },
     ],
-    method: "/extract (parallel)",
-    codePreview: `const app = new FirecrawlApp({ apiKey });
-
-const result = await app.extract({
-  urls: [
-    "https://slack.com/pricing/*",
-    "https://teams.microsoft.com/pricing/*",
-    "https://workspace.google.com/pricing/*"
-  ],
-  prompt: "Extract pricing tiers, features, and competitive positioning",
-  schema: {
-    companies: [{
-      name: "string",
-      plans: [{
-        tier: "string",
-        price: "string",
-        features: ["string"]
-      }]
-    }]
-  }
-});`,
+    method: "Parallel Extract",
   },
 ];
 
@@ -281,7 +176,7 @@ function syntaxHighlight(json: string): string {
 // COMPONENTS
 // ════════════════════════════════════════════════════════════════
 
-function FireIcon({ className = "" }: { className?: string }) {
+function IntelIcon({ className = "" }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -290,8 +185,11 @@ function FireIcon({ className = "" }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M12 23C6.477 23 2 18.523 2 13c0-3.5 1.5-6.5 4-8.5 0 0 .5 2.5 2 4 .913.913 1.5-.5 1.5-2 0-2 1.5-4 3.5-5.5 0 0 .5 3.5 2.5 6s3.5 5.5 3.5 8c0 5.523-4.477 8-7 8z"
-        fill="currentColor"
+        d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -333,54 +231,6 @@ function JsonViewer({ data }: { data: unknown }) {
   );
 }
 
-function CodePreview({ code }: { code: string }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="border border-border rounded-xl overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <span className="flex items-center gap-2">
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-            />
-          </svg>
-          View Firecrawl API Code
-        </span>
-        <svg
-          className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-      {open && (
-        <pre className="px-5 pb-5 text-[13px] leading-relaxed font-mono text-muted-foreground overflow-auto">
-          {code}
-        </pre>
-      )}
-    </div>
-  );
-}
-
 function StatsBadge({
   icon,
   label,
@@ -411,8 +261,8 @@ function Dashboard({
       {/* Hero */}
       <div className="text-center mb-16">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium mb-6">
-          <FireIcon className="w-3.5 h-3.5" />
-          Powered by Firecrawl
+          <IntelIcon className="w-3.5 h-3.5" />
+          AI-Powered Intelligence
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
           WebIntel
@@ -465,14 +315,14 @@ function Dashboard({
       <div className="mt-16 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 text-center">
         {[
           { label: "Scrape", desc: "PDFs & webpages to JSON" },
-          { label: "Agent", desc: "Autonomous web research" },
-          { label: "Browser", desc: "Managed browser automation" },
+          { label: "Research", desc: "Autonomous web research" },
+          { label: "Automate", desc: "Managed browser automation" },
           { label: "Crawl", desc: "Entire sites at scale" },
           { label: "Extract", desc: "Structured data from URLs" },
         ].map((cap) => (
           <div key={cap.label}>
-            <div className="text-sm font-semibold text-primary mb-1 font-mono">
-              /{cap.label.toLowerCase()}
+            <div className="text-sm font-semibold text-primary mb-1">
+              {cap.label}
             </div>
             <div className="text-xs text-muted-foreground">{cap.desc}</div>
           </div>
@@ -507,7 +357,7 @@ function DemoRunner({
     setResult(null);
 
     try {
-      const res = await fetch("/api/firecrawl", {
+      const res = await fetch("/api/intel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -626,14 +476,14 @@ function DemoRunner({
         {loading ? (
           <>
             <span className="spin-slow inline-block">
-              <FireIcon className="w-4 h-4" />
+              <IntelIcon className="w-4 h-4" />
             </span>
-            Firecrawl is working
+            Processing
             <LoadingDots />
           </>
         ) : (
           <>
-            <FireIcon className="w-4 h-4" />
+            <IntelIcon className="w-4 h-4" />
             Run Extraction
           </>
         )}
@@ -718,16 +568,13 @@ function DemoRunner({
             <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-sm text-amber-400">
               Live API: {String(result.meta.live_error)}
               <span className="block mt-1 text-xs text-amber-400/60">
-                Showing demo data as fallback. The live API connection is working — this is a plan/credit limitation.
+                Showing demo data as fallback. The live connection is working — this is a plan/credit limitation.
               </span>
             </div>
           ) : null}
 
           {/* JSON Result */}
           {result.data != null ? <JsonViewer data={result.data} /> : null}
-
-          {/* Code Preview */}
-          <CodePreview code={demo.codePreview} />
         </div>
       )}
     </div>
@@ -755,7 +602,7 @@ function Header({
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <FireIcon className="w-5 h-5 text-primary" />
+          <IntelIcon className="w-5 h-5 text-primary" />
           <span className="font-semibold text-sm tracking-tight">
             WebIntel
           </span>
@@ -813,13 +660,13 @@ function Header({
           <div className="max-w-5xl mx-auto px-6 py-4">
             <div className="flex items-center gap-4">
               <label className="text-xs text-muted-foreground whitespace-nowrap">
-                Firecrawl API Key
+                API Key
               </label>
               <input
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="fc-..."
+                placeholder="Enter your API key"
                 className="flex-1 max-w-sm px-3 py-1.5 bg-card border border-border rounded-lg text-sm font-mono placeholder:text-muted focus:outline-none focus:border-primary/50 transition-colors"
               />
               <span className="text-xs text-muted">
@@ -873,13 +720,8 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border py-8 mt-16">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between text-xs text-muted">
-          <span>
-            Built with{" "}
-            <span className="text-primary font-medium">Firecrawl</span> + Next.js
-          </span>
-          <span>
-            Endpoints: /scrape · /agent · /crawl · /extract · /browser
-          </span>
+          <span>WebIntel — Analog Intelligence</span>
+          <span>AI-powered web data extraction</span>
         </div>
       </footer>
     </div>

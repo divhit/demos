@@ -6,7 +6,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "WebIntel — Business Intelligence powered by Firecrawl",
+  title: "WebIntel — AI-Powered Business Intelligence",
   description:
     "Extract, research, and monitor web data with AI-powered automation",
 };

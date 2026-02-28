@@ -76,7 +76,7 @@ const MOCK_DATA: Record<string, unknown> = {
   vendor: {
     research_query:
       "Compare enterprise CRM pricing across Salesforce, HubSpot, and Microsoft Dynamics 365",
-    agent_model: "FIRE-1",
+    agent_model: "AI Research Agent",
     sites_visited: [
       "salesforce.com/pricing",
       "hubspot.com/pricing/crm",
@@ -343,7 +343,7 @@ const MOCK_DATA: Record<string, unknown> = {
       id: "sess_f7a2b9c1d4e8",
       profile: "vendor-portal",
       ttl_seconds: 300,
-      live_view_url: "https://browser.firecrawl.dev/live/sess_f7a2b9c1d4e8",
+      live_view_url: "https://browser.webintel.ai/live/sess_f7a2b9c1d4e8",
     },
     actions_performed: [
       { step: 1, action: "navigate", target: "https://portal.contoso.com/login", status: "success", duration_ms: 820 },
@@ -393,11 +393,11 @@ const MOCK_DELAYS: Record<string, number> = {
 };
 
 const MOCK_META: Record<string, object> = {
-  invoice: { credits_used: 3, pages_processed: 1, method: "/scrape + PDF Parser V2 (auto)" },
-  vendor: { credits_used: 48, pages_processed: 12, method: "/agent (FIRE-1)" },
-  browser: { credits_used: 8, pages_processed: 1, method: "/browser sandbox" },
-  knowledge: { credits_used: 32, pages_processed: 47, method: "/crawl + /extract" },
-  competitor: { credits_used: 18, pages_processed: 3, method: "/extract (parallel)" },
+  invoice: { credits_used: 3, pages_processed: 1, method: "PDF Parser V2 (auto)" },
+  vendor: { credits_used: 48, pages_processed: 12, method: "AI Research Agent" },
+  browser: { credits_used: 8, pages_processed: 1, method: "Browser Sandbox" },
+  knowledge: { credits_used: 32, pages_processed: 47, method: "Crawl + Extract" },
+  competitor: { credits_used: 18, pages_processed: 3, method: "Parallel Extract" },
 };
 
 // ── Route handler ──────────────────────────────────────────────
@@ -410,7 +410,7 @@ export async function POST(req: NextRequest) {
     demoMode: boolean;
   };
 
-  const resolvedKey = apiKey || process.env.FIRECRAWL_API_KEY || "";
+  const resolvedKey = (apiKey || process.env.FIRECRAWL_API_KEY || "").trim();
 
   // Demo mode — return mock data with realistic delay
   if (demoMode || !resolvedKey) {
@@ -428,7 +428,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Live mode — call Firecrawl API
+  // Live mode — call extraction API
   try {
     const FirecrawlApp = (await import("@mendable/firecrawl-js")).default;
     const app = new FirecrawlApp({ apiKey: resolvedKey });
@@ -438,7 +438,6 @@ export async function POST(req: NextRequest) {
 
     switch (type) {
       case "invoice": {
-        // PDF Parser V2 with auto mode (OCR fallback)
         const result = await app.scrape(input, {
           formats: [
             "markdown",
@@ -484,7 +483,6 @@ export async function POST(req: NextRequest) {
       }
 
       case "browser": {
-        // Browser Sandbox — create session and execute code
         const session = await (app as unknown as {
           browser: (opts?: Record<string, unknown>) => Promise<{ id: string }>;
           browserExecute: (id: string, opts: Record<string, unknown>) => Promise<unknown>;
@@ -571,7 +569,7 @@ export async function POST(req: NextRequest) {
 
     const elapsed = Date.now() - start;
 
-    // Check for partial failures (API call succeeded but operation failed)
+    // Check for partial failures
     const dataObj = data as Record<string, unknown> | null;
     const isFailed =
       dataObj?.status === "failed" ||
