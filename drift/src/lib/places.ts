@@ -35,7 +35,7 @@ export async function searchPlaces(
   query: string,
   latitude: number,
   longitude: number,
-  radius: number = 5000
+  radius: number = 15000
 ): Promise<DriftPlace[]> {
   const response = await fetch(`${BASE}/places:searchText`, {
     method: "POST",

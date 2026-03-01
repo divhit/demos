@@ -24,7 +24,7 @@ export function DriftMap({
   return (
     <Map
       defaultCenter={center}
-      defaultZoom={14}
+      defaultZoom={12}
       gestureHandling="greedy"
       disableDefaultUI
       className="h-full w-full"
